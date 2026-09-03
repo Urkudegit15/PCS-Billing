@@ -267,8 +267,8 @@
                         <!-- Party Name -->
                         <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
                             <label for="partyName" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Party Name</label>
-                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="neo-input p-2.5 sm:p-3" list="partyNamesList">
-                            <datalist id="partyNamesList"></datalist>
+                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="neo-input p-2.5 sm:p-3" list="entryPartyNamesList">
+                            <datalist id="entryPartyNamesList"></datalist>
                         </div>
 
                         <!-- Destination/Place -->
@@ -321,8 +321,9 @@
             <div class="neo-card p-4 sm:p-8">
                 <div class="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8 items-stretch sm:items-end">
                     <div class="flex flex-col gap-1.5 sm:gap-2 flex-grow w-full">
-                        <label for="searchInput" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Enter Party Name or C-Note No.</label>
-                        <input type="text" id="searchInput" autocomplete="off" class="neo-input p-2.5 sm:p-3 w-full" list="partyNamesList">
+                        <label for="recordSearchInput" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Enter Party Name or C-Note No.</label>
+                        <input type="text" id="recordSearchInput" autocomplete="off" class="neo-input p-2.5 sm:p-3 w-full" list="searchPartyNamesList">
+                        <datalist id="searchPartyNamesList"></datalist>
                     </div>
                     <button type="button" id="doSearchBtn" class="neo-btn neo-btn-primary w-full sm:w-auto px-6 sm:px-8 py-3 uppercase tracking-wider flex items-center justify-center h-[48px] sm:h-[52px]">
                         <span class="material-icons mr-2 text-lg sm:text-xl" id="searchIcon">search</span>
@@ -339,7 +340,7 @@
 
                 <!-- Monthly Bill Trigger Container (Hidden by default) -->
                 <div id="monthlyBillContainer" class="hidden mt-6 pt-6 border-t-4 border-black flex justify-end">
-                    <button id="generateMonthlyBillBtn" class="neo-btn bg-black text-white px-6 sm:px-8 py-3 text-sm sm:text-base uppercase font-bold tracking-wider flex items-center shadow-[4px_4px_0px_0px_rgba(255,222,89,1)] hover:shadow-[6px_6px_0px_0px_rgba(255,222,89,1)]">
+                    <button id="generateMonthlyBillBtn" class="neo-btn bg-black text-white px-6 sm:px-8 py-3 text-sm sm:text-base uppercase font-bold tracking-wider flex items-center w-full sm:w-auto justify-center shadow-[4px_4px_0px_0px_rgba(255,222,89,1)] hover:shadow-[6px_6px_0px_0px_rgba(255,222,89,1)]">
                         <span class="material-icons mr-2">date_range</span> Generate Monthly Bill
                     </button>
                 </div>
@@ -353,9 +354,9 @@
                     <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">Daily Bills</h2>
                     <p class="font-medium mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
                 </div>
-                <div class="flex items-center gap-2 w-full sm:w-auto">
-                    <input type="date" id="dailyDateSelector" class="neo-input p-2 sm:p-2.5 flex-grow sm:flex-grow-0 uppercase font-bold text-sm">
-                    <button type="button" id="refreshTodayBtn" class="neo-btn inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 uppercase tracking-wider text-xs sm:text-sm">
+                <div class="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                    <input type="date" id="dailyDateSelector" class="neo-input p-2 sm:p-2.5 flex-grow uppercase font-bold text-sm">
+                    <button type="button" id="refreshTodayBtn" class="neo-btn shrink-0 inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 uppercase tracking-wider text-xs sm:text-sm">
                         <span class="material-icons text-sm" id="refreshIcon">refresh</span>
                     </button>
                 </div>
@@ -709,21 +710,53 @@ function doGet(e) {
             const navEntryText = document.getElementById('navEntryText');
 
             // --- Party Name Autocomplete Logic ---
+            let globalPartyNames = [];
+
             async function loadPartyNames() {
                 if (!APPS_SCRIPT_URL) return;
                 try {
                     const response = await fetch(`${APPS_SCRIPT_URL}?action=parties`);
                     const parties = await response.json();
                     if (Array.isArray(parties) && !parties[0]?.error) {
-                        const datalist = document.getElementById('partyNamesList');
-                        datalist.innerHTML = parties.map(p => `<option value="${p}"></option>`).join('');
+                        // Sort alphabetically A-Z
+                        globalPartyNames = parties.sort((a, b) => a.localeCompare(b));
+                        renderDatalists(""); 
                     }
                 } catch (e) {
                     console.error("Failed to load party names", e);
                 }
             }
-            // Load them on startup
+
+            function renderDatalists(filterText, targetListId) {
+                const val = filterText.toLowerCase();
+                // Strictly filter items that START with the typed letters (Alphabetical behavior)
+                const filtered = globalPartyNames.filter(p => p.toLowerCase().startsWith(val));
+                
+                const html = filtered.map(p => `<option value="${p}"></option>`).join('');
+                
+                if(targetListId) {
+                    const dl = document.getElementById(targetListId);
+                    if(dl) dl.innerHTML = html;
+                } else {
+                    const el1 = document.getElementById('entryPartyNamesList');
+                    const el2 = document.getElementById('searchPartyNamesList');
+                    if(el1) el1.innerHTML = html;
+                    if(el2) el2.innerHTML = html;
+                }
+            }
+
+            // Load on startup
             loadPartyNames();
+
+            // Dynamic filter listeners
+            const partyInput = document.getElementById('partyName');
+            if(partyInput) {
+                partyInput.addEventListener('input', (e) => renderDatalists(e.target.value, 'entryPartyNamesList'));
+            }
+            const recordSearchInput = document.getElementById('recordSearchInput');
+            if(recordSearchInput) {
+                recordSearchInput.addEventListener('input', (e) => renderDatalists(e.target.value, 'searchPartyNamesList'));
+            }
             // --- End Party Name Autocomplete Logic ---
 
             // Help Modal Logic
@@ -900,39 +933,44 @@ function doGet(e) {
                 });
             });
 
-            // Generate Neobrutalist Result Card
+            // Generate Neobrutalist Result Card (Redesigned to prevent overlaps)
             function generateResultCard(item, dateStr, amount) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
                 
                 return `
-                <div class="bg-white border-2 border-black rounded-lg p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 transition-transform hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-2 sm:mb-4 mx-0.5 sm:mx-1">
-                    <div class="overflow-hidden">
-                        <div class="font-black text-lg sm:text-xl uppercase mb-1 truncate">${item['Party Name'] || '-'}</div>
-                        <div class="text-xs sm:text-sm font-bold flex flex-wrap gap-x-3 gap-y-2">
-                            <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded"><span class="material-icons text-[14px] sm:text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
-                            <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded"><span class="material-icons text-[14px] sm:text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                <div class="bg-white border-2 border-black rounded-lg p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-4 transition-transform hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-3 mx-0.5 sm:mx-1">
+                    
+                    <!-- Top Section -->
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="overflow-hidden flex-1">
+                            <div class="font-black text-lg sm:text-xl uppercase mb-2 truncate" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded text-xs sm:text-sm font-bold"><span class="material-icons text-[14px] sm:text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
+                                <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded text-xs sm:text-sm font-bold"><span class="material-icons text-[14px] sm:text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                            </div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black leading-none mb-1.5">₹${amount.toFixed(2)}</div>
+                            <div class="text-xs sm:text-sm font-bold text-gray-600 sm:text-black bg-gray-100 px-2 py-1 rounded inline-block">${item['Weight (Kg)'] || '0'} Kg</div>
                         </div>
                     </div>
-                    <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t-2 sm:border-t-0 border-black sm:border-transparent pt-3 sm:pt-0 mt-2 sm:mt-0">
-                        <div>
-                            <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black">₹${amount.toFixed(2)}</div>
-                            <div class="text-xs sm:text-sm font-bold mt-0 sm:mt-1 text-gray-600 sm:text-black">${item['Weight (Kg)'] || '0'} Kg &bull; <span class="truncate inline-block align-bottom max-w-[100px] sm:max-w-[150px]">${item['Destination'] || '-'}</span></div>
-                        </div>
-                        
-                        <div class="flex gap-2 mt-0 sm:mt-3 justify-end w-auto">
-                            <!-- Edit Button -->
-                            <button class="edit-bill-btn neo-btn bg-white text-black px-2 py-1.5 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all" data-item="${encodedItem}" title="Edit">
-                                <span class="material-icons text-[16px] sm:text-[18px]">edit</span>
-                            </button>
-                            <!-- Delete Button -->
-                            <button class="delete-bill-btn neo-btn bg-[#FF5757] text-white px-2 py-1.5 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all" data-item="${encodedItem}" title="Delete">
-                                <span class="material-icons text-[16px] sm:text-[18px]">delete</span>
-                            </button>
-                            <!-- Print Button -->
-                            <button class="print-bill-btn neo-btn bg-black text-white px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs uppercase font-bold tracking-wider flex items-center shadow-[2px_2px_0px_0px_rgba(255,222,89,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,222,89,1)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all" data-item="${encodedItem}">
-                                <span class="material-icons text-[14px] sm:text-[16px] mr-1 sm:mr-1.5">print</span> Print
-                            </button>
-                        </div>
+
+                    <!-- Middle Section -->
+                    <div class="text-xs sm:text-sm font-bold text-gray-700 bg-gray-50 p-2 sm:p-3 rounded border border-gray-200 uppercase truncate" title="${item['Destination'] || '-'}">
+                        <span class="material-icons text-[14px] sm:text-[16px] inline-block align-middle mr-1">place</span> ${item['Destination'] || '-'}
+                    </div>
+
+                    <!-- Bottom Section (Action Buttons) -->
+                    <div class="flex gap-2 sm:justify-end w-full border-t-2 border-dashed border-gray-200 pt-3 mt-1">
+                        <button class="edit-bill-btn neo-btn bg-white text-black px-2 py-2.5 sm:px-4 sm:py-2 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Edit">
+                            <span class="material-icons text-[16px]">edit</span> <span class="ml-1 uppercase sm:hidden">Edit</span>
+                        </button>
+                        <button class="delete-bill-btn neo-btn bg-[#FF5757] text-white px-2 py-2.5 sm:px-4 sm:py-2 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Delete">
+                            <span class="material-icons text-[16px]">delete</span> <span class="ml-1 uppercase sm:hidden">Delete</span>
+                        </button>
+                        <button class="print-bill-btn neo-btn bg-black text-white px-3 py-2.5 sm:px-5 sm:py-2 text-xs uppercase font-bold tracking-wider flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(255,222,89,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,222,89,1)] transition-all flex-[1.5] sm:flex-none" data-item="${encodedItem}">
+                            <span class="material-icons text-[16px] mr-1.5">print</span> Print
+                        </button>
                     </div>
                 </div>
                 `;
@@ -1033,7 +1071,6 @@ function doGet(e) {
             let currentSearchData = [];
 
             // Search Logic
-            const searchInput = document.getElementById('searchInput');
             const doSearchBtn = document.getElementById('doSearchBtn');
             const searchResults = document.getElementById('searchResults');
             const searchIcon = document.getElementById('searchIcon');
@@ -1041,7 +1078,7 @@ function doGet(e) {
             const monthlyBillContainer = document.getElementById('monthlyBillContainer');
 
             doSearchBtn.addEventListener('click', async () => {
-                const query = searchInput.value.trim();
+                const query = recordSearchInput.value.trim();
                 if (!query) {
                     showSnackbar("Please enter a Party Name or C-Note No.", true);
                     return;
@@ -1117,7 +1154,7 @@ function doGet(e) {
                 }
             });
 
-            searchInput.addEventListener('keypress', (e) => {
+            recordSearchInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     e.preventDefault();
                     doSearchBtn.click();
