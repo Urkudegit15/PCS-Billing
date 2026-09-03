@@ -16,7 +16,7 @@
     <!-- Google Fonts: Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -45,6 +45,17 @@
             background-color: #f4f4f0;
             background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
             background-size: 20px 20px;
+        }
+
+        /* Print Specific Styles */
+        @media print {
+            @page { margin: 0.8cm; }
+            body {
+                background-color: white !important;
+                background-image: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
 
         /* Neobrutalist UI Components */
@@ -163,8 +174,8 @@
 <body class="font-sans antialiased text-black">
 
     <!-- Slide-out Navigation Drawer -->
-    <div id="drawerOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 opacity-0"></div>
-    <div id="navDrawer" class="fixed top-0 left-0 h-full w-64 sm:w-72 bg-[#f4f4f0] border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
+    <div id="drawerOverlay" class="print:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="navDrawer" class="print:hidden fixed top-0 left-0 h-full w-64 sm:w-72 bg-[#f4f4f0] border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
         <div class="h-16 sm:h-20 border-b-4 border-black flex items-center justify-between px-4 bg-neo-yellow shrink-0">
             <span class="font-black text-xl uppercase tracking-wider flex items-center">
                 <span class="material-icons mr-2">menu_open</span> Menu
@@ -194,7 +205,7 @@
     </div>
 
     <!-- App Bar -->
-    <header class="bg-white border-b-4 border-black w-full fixed top-0 z-50">
+    <header class="print:hidden bg-white border-b-4 border-black w-full fixed top-0 z-50">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
@@ -219,7 +230,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <main class="print:hidden pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         
         <!-- Form Section -->
         <div id="entrySection">
@@ -354,7 +365,7 @@
         </div>
 
         <!-- Setup Instructions Modal (Hidden by default) -->
-        <div id="setupModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+        <div id="setupModal" class="print:hidden fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
             <div class="neo-card max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
                 <div class="px-4 sm:px-6 py-4 sm:py-5 border-b-4 border-black flex justify-between items-center bg-neo-yellow flex-shrink-0">
                     <h3 class="text-lg sm:text-xl font-black uppercase flex items-center">
@@ -373,7 +384,7 @@
                             <code class="bg-gray-100 p-2 border-2 border-black block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap">Date | C-Note No | Party Name | Destination | Weight (Kg) | Amount</code>
                         </li>
                         <li>Go to <strong>Extensions > Apps Script</strong>.</li>
-                        <li>Paste the following code:</li>
+                        <li>Paste the following code (<strong>UPDATED - Hardcoded column indexing</strong>):</li>
                     </ol>
                     <pre class="bg-black text-[#FFDE59] p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] rounded-lg text-[10px] sm:text-xs overflow-x-auto font-mono">
 function doPost(e) {
@@ -388,12 +399,11 @@ function doPost(e) {
 function doGet(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = sheet.getDataRange().getDisplayValues(); // getDisplayValues safely handles dates and numbers
+    var data = sheet.getDataRange().getDisplayValues(); 
     var action = e.parameter.action;
     var query = e.parameter.search ? e.parameter.search.toLowerCase() : "";
     var results = [];
     if (data.length > 1) {
-      var headers = data[0];
       for (var i = 1; i < data.length; i++) {
         var row = data[i];
         if(!row[0] && !row[1] && !row[2]) continue; // Skip empty rows
@@ -413,9 +423,15 @@ function doGet(e) {
         }
         
         if (isToday || matchesSearch) {
-          var obj = {};
-          for (var j = 0; j < headers.length; j++) { obj[headers[j]] = row[j]; }
-          results.push(obj);
+          // Hardcode keys to indices. Prevents header typing mistakes in Sheet.
+          results.push({
+            'Date': row[0],
+            'C-Note No': row[1],
+            'Party Name': row[2],
+            'Destination': row[3],
+            'Weight (Kg)': row[4],
+            'Amount': row[5]
+          });
         }
       }
     }
@@ -440,7 +456,80 @@ function doGet(e) {
     </main>
 
     <!-- Snackbar for Notifications -->
-    <div id="snackbar">Data saved successfully!</div>
+    <div id="snackbar" class="print:hidden">Data saved successfully!</div>
+
+    <!-- PRINT INVOICE TEMPLATE (Hidden from screen, visible on print) -->
+    <div id="printArea" class="hidden print:block w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
+        
+        <!-- Header Section -->
+        <div class="flex justify-between items-start border-b-4 border-black pb-4 sm:pb-6 mb-6">
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-[#4F46E5] print:text-black">PCS Billing</h1>
+                <p class="font-bold text-base sm:text-lg bg-black text-white inline-block px-2 py-0.5 mt-1 uppercase tracking-widest">Courier & Cargo</p>
+                <p class="text-xs sm:text-sm font-bold mt-4 max-w-md uppercase">
+                    Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001
+                </p>
+            </div>
+            <div class="text-right border-2 border-black p-3 sm:p-4 bg-[#FFDE59] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:bg-white print:border-4">
+                <p class="text-sm sm:text-base font-bold uppercase tracking-wider mb-1"><strong>Phone:</strong> 6265865576</p>
+                <p class="text-sm sm:text-base font-bold uppercase tracking-wider"><strong>PAN:</strong> AAGPU0025P</p>
+            </div>
+        </div>
+
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-black uppercase bg-[#f4f4f0] border-2 border-black inline-block px-6 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4 print:bg-white">Invoice / Bill</h2>
+        </div>
+
+        <!-- Billed To -->
+        <div class="flex justify-between border-2 border-black p-4 sm:p-5 mb-8 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4">
+            <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billed To Party</p>
+                <p class="text-xl sm:text-2xl font-black uppercase mt-1" id="printPartyName">-</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Bill Date</p>
+                <p class="text-lg sm:text-xl font-bold mt-1" id="printDate">-</p>
+            </div>
+        </div>
+
+        <!-- Details Table -->
+        <table class="w-full border-collapse border-4 border-black mb-10 text-left">
+            <thead>
+                <tr class="bg-gray-100 border-b-4 border-black print:bg-white">
+                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-xs sm:text-sm">C-Note No.</th>
+                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-xs sm:text-sm">Destination</th>
+                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-right text-xs sm:text-sm">Weight</th>
+                    <th class="p-3 sm:p-4 font-black uppercase tracking-wider text-right text-sm sm:text-lg">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg" id="printCNote">-</td>
+                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg uppercase" id="printDest">-</td>
+                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg text-right"><span id="printWeight">-</span> Kg</td>
+                    <td class="p-3 sm:p-4 font-black text-xl sm:text-2xl text-right" id="printAmount">-</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Footer / Bank Details -->
+        <div class="flex flex-col sm:flex-row justify-between items-end mt-4">
+            <div class="border-2 border-black p-4 sm:p-5 bg-[#f4f4f0] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full sm:w-2/3 mb-8 sm:mb-0 print:shadow-none print:border-4 print:bg-white">
+                <p class="text-xs sm:text-sm font-black uppercase tracking-widest border-b-2 border-black pb-2 mb-3">Bank Details for Payment</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-xs sm:text-sm">
+                    <p><strong>Banking Name:</strong><br><span class="font-bold uppercase text-sm sm:text-base">Prabhakar Urkude</span></p>
+                    <p><strong>Bank:</strong><br><span class="font-bold uppercase text-sm sm:text-base">UNION BANK OF INDIA</span></p>
+                    <p><strong>A/C No:</strong><br><span class="font-mono text-base sm:text-lg font-bold bg-[#FFDE59] px-1 print:bg-transparent">520291019763005</span></p>
+                    <p><strong>IFSC:</strong><br><span class="font-mono text-base sm:text-lg font-bold">UBIN0901571</span></p>
+                </div>
+            </div>
+            
+            <div class="text-center w-full sm:w-1/3">
+                <div class="border-b-2 border-black mb-2 h-16 w-3/4 mx-auto sm:ml-auto sm:mr-0"></div>
+                <p class="font-bold text-xs sm:text-sm uppercase tracking-wider">Authorized Signatory</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         // ==========================================
@@ -670,6 +759,8 @@ function doGet(e) {
 
             // Generate Neobrutalist Result Card
             function generateResultCard(item, dateStr, amount) {
+                const encodedItem = encodeURIComponent(JSON.stringify(item));
+                
                 return `
                 <div class="bg-white border-2 border-black rounded-lg p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 transition-transform hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-2 sm:mb-4 mx-0.5 sm:mx-1">
                     <div class="overflow-hidden">
@@ -680,12 +771,48 @@ function doGet(e) {
                         </div>
                     </div>
                     <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t-2 sm:border-t-0 border-black sm:border-transparent pt-3 sm:pt-0 mt-2 sm:mt-0">
-                        <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black">₹${amount.toFixed(2)}</div>
-                        <div class="text-xs sm:text-sm font-bold mt-0 sm:mt-1 text-gray-600 sm:text-black">${item['Weight (Kg)'] || '0'} Kg &bull; <span class="truncate inline-block align-bottom max-w-[100px] sm:max-w-[150px]">${item['Destination'] || '-'}</span></div>
+                        <div>
+                            <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black">₹${amount.toFixed(2)}</div>
+                            <div class="text-xs sm:text-sm font-bold mt-0 sm:mt-1 text-gray-600 sm:text-black">${item['Weight (Kg)'] || '0'} Kg &bull; <span class="truncate inline-block align-bottom max-w-[100px] sm:max-w-[150px]">${item['Destination'] || '-'}</span></div>
+                        </div>
+                        
+                        <button class="print-bill-btn neo-btn bg-black text-white px-3 sm:px-4 py-1.5 sm:mt-3 text-[10px] sm:text-xs uppercase font-bold tracking-wider flex items-center shadow-[2px_2px_0px_0px_rgba(255,222,89,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,222,89,1)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all ml-2 sm:ml-0" data-item="${encodedItem}">
+                            <span class="material-icons text-[14px] sm:text-[16px] mr-1 sm:mr-1.5">print</span> Print
+                        </button>
                     </div>
                 </div>
                 `;
             }
+
+            // Print Event Delegation
+            document.addEventListener('click', (e) => {
+                const printBtn = e.target.closest('.print-bill-btn');
+                if (printBtn) {
+                    const itemData = JSON.parse(decodeURIComponent(printBtn.getAttribute('data-item')));
+                    
+                    // Format Date
+                    let formattedDate = itemData['Date'];
+                    try {
+                        if(formattedDate) {
+                            const d = new Date(formattedDate);
+                            if(!isNaN(d)) formattedDate = d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'});
+                        }
+                    } catch(e){}
+                    
+                    const amount = parseFloat(itemData['Amount']) || 0;
+
+                    // Populate Template
+                    document.getElementById('printPartyName').textContent = itemData['Party Name'] || '-';
+                    document.getElementById('printDate').textContent = formattedDate || '-';
+                    document.getElementById('printCNote').textContent = itemData['C-Note No'] || '-';
+                    document.getElementById('printDest').textContent = itemData['Destination'] || '-';
+                    document.getElementById('printWeight').textContent = itemData['Weight (Kg)'] || '0';
+                    document.getElementById('printAmount').textContent = '₹' + amount.toFixed(2);
+
+                    // Trigger Print Modal
+                    window.print();
+                }
+            });
 
             // Search Logic
             const searchInput = document.getElementById('searchInput');
