@@ -379,7 +379,7 @@
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var rowData = [e.parameter['Date'], e.parameter['C-Note No'], e.parameter['Party Name'], e.parameter['Destination'], e.parameter['Weight (Kg)'], e.parameter['Amount']];
+    var rowData = [e.parameter['Date'] || '', e.parameter['C-Note No'] || '', e.parameter['Party Name'] || '', e.parameter['Destination'] || '', e.parameter['Weight (Kg)'] || '', e.parameter['Amount'] || ''];
     sheet.appendRow(rowData);
     return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
   } catch (error) { return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT); }
@@ -388,41 +388,43 @@ function doPost(e) {
 function doGet(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = sheet.getDataRange().getValues();
+    var data = sheet.getDataRange().getDisplayValues(); // getDisplayValues safely handles dates and numbers
     var action = e.parameter.action;
     var query = e.parameter.search ? e.parameter.search.toLowerCase() : "";
     var results = [];
     if (data.length > 1) {
       var headers = data[0];
       for (var i = 1; i < data.length; i++) {
-        var rowDate = new Date(data[i][0]);
-        var isToday = false;
+        var row = data[i];
+        if(!row[0] && !row[1] && !row[2]) continue; // Skip empty rows
         
+        var isToday = false;
         if (action === 'today') {
           var today = new Date();
-          if (rowDate.getDate() == today.getDate() && rowDate.getMonth() == today.getMonth() && rowDate.getFullYear() == today.getFullYear()) {
+          var rowDate = new Date(row[0]);
+          if (!isNaN(rowDate) && rowDate.getDate() == today.getDate() && rowDate.getMonth() == today.getMonth() && rowDate.getFullYear() == today.getFullYear()) {
             isToday = true;
           }
         }
         
         var matchesSearch = false;
-        if (query && (data[i][2].toString().toLowerCase().indexOf(query) !== -1 || data[i][1].toString().toLowerCase().indexOf(query) !== -1)) {
+        if (query && (row[2].toString().toLowerCase().indexOf(query) !== -1 || row[1].toString().toLowerCase().indexOf(query) !== -1)) {
           matchesSearch = true;
         }
         
         if (isToday || matchesSearch) {
           var obj = {};
-          for (var j = 0; j < headers.length; j++) { obj[headers[j]] = data[i][j]; }
+          for (var j = 0; j < headers.length; j++) { obj[headers[j]] = row[j]; }
           results.push(obj);
         }
       }
     }
     return ContentService.createTextOutput(JSON.stringify(results)).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) { return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON); }
+  } catch (error) { return ContentService.createTextOutput(JSON.stringify([{error: error.toString()}])).setMimeType(ContentService.MimeType.JSON); }
 }
                     </pre>
                     <ol class="list-decimal pl-5 space-y-3 font-bold" start="5">
-                        <li>Click <strong>Deploy > Manage deployments</strong>, edit (pencil icon), create a <strong>New version</strong> and deploy.</li>
+                        <li>Click <strong>Deploy > Manage deployments</strong>, edit (pencil icon), <strong>choose "New version" from the version dropdown (CRITICAL)</strong> and deploy.</li>
                         <li class="pt-2 border-t-2 border-black mt-2">
                             <strong>To fully enable App Installation:</strong> Create a blank file named <code>sw.js</code> in your GitHub repository alongside <code>index.html</code> and paste this line inside it:<br>
                             <code class="bg-gray-100 p-2 border-2 border-black block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap">self.addEventListener('fetch', function(e) {});</code>
@@ -444,7 +446,7 @@ function doGet(e) {
         // ==========================================
         // CONFIGURATION
         // ==========================================
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7U7_4m5RLH09ntXAHqGqeE6b-tG9mIVHwlIftBxodJHOhFhthAW36TvzrYgfgEmMLYg/exec"; 
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzq6bXuPoeR7KGyfl6L4vbVck5-9bWy8F_5K2ROvmKb5SOml5MS4p_6hkajFspnwwpwVQ/exec"; 
         // ==========================================
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -712,7 +714,19 @@ function doGet(e) {
 
                 try {
                     const response = await fetch(`${APPS_SCRIPT_URL}?search=${encodeURIComponent(query)}`);
-                    const data = await response.json();
+                    const text = await response.text();
+                    
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch(e) {
+                        console.error("Raw response:", text);
+                        throw new Error("NOT_NEW_VERSION");
+                    }
+
+                    if (data && data.length > 0 && data[0].error) {
+                        throw new Error("APPS_SCRIPT_ERROR: " + data[0].error);
+                    }
 
                     if (!data || data.length === 0) {
                         searchResults.innerHTML = `
@@ -735,11 +749,15 @@ function doGet(e) {
                     }
                 } catch (error) {
                     console.error('Search error:', error);
-                    showSnackbar("Error fetching data.", true);
+                    let errMsg = "Error fetching data.";
+                    if(error.message === "NOT_NEW_VERSION") errMsg = "Deploy Apps Script as 'New version'!";
+                    else if(error.message.startsWith("APPS_SCRIPT_ERROR")) errMsg = "Backend Error. Check sheet.";
+                    
+                    showSnackbar(errMsg, true);
                     searchResults.innerHTML = `
                         <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white text-neo-error">
                             <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">error_outline</span>
-                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Error fetching data</p>
+                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">${errMsg}</p>
                         </div>`;
                 } finally {
                     doSearchBtn.disabled = false;
@@ -773,7 +791,19 @@ function doGet(e) {
 
                 try {
                     const response = await fetch(`${APPS_SCRIPT_URL}?action=today`);
-                    const data = await response.json();
+                    const text = await response.text();
+                    
+                    let data;
+                    try {
+                        data = JSON.parse(text);
+                    } catch(e) {
+                        console.error("Raw response:", text);
+                        throw new Error("NOT_NEW_VERSION");
+                    }
+
+                    if (data && data.length > 0 && data[0].error) {
+                        throw new Error("APPS_SCRIPT_ERROR: " + data[0].error);
+                    }
 
                     if (!data || data.length === 0) {
                         todayResults.innerHTML = `
@@ -802,11 +832,15 @@ function doGet(e) {
                     }
                 } catch (error) {
                     console.error('Fetch error:', error);
-                    showSnackbar("Error fetching today's bills.", true);
+                    let errMsg = "Error fetching data.";
+                    if(error.message === "NOT_NEW_VERSION") errMsg = "Deploy Apps Script as 'New version'!";
+                    else if(error.message.startsWith("APPS_SCRIPT_ERROR")) errMsg = "Backend Error. Check sheet.";
+
+                    showSnackbar(errMsg, true);
                     todayResults.innerHTML = `
                         <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white text-neo-error">
                             <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">error_outline</span>
-                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Error fetching data</p>
+                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">${errMsg}</p>
                         </div>`;
                 } finally {
                     refreshIcon.classList.remove('animate-spin');
