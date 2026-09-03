@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#FFDE59">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PCS Billing">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-8.5 1.5h-2.5V6H12v3.5zm2.5 0H15V6h1.5v3.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-8.5l1.96 2.5H17V9.5h2.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z'/%3E%3C/svg%3E">
+    
+    <title>PCS Billing | Courier System</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Space Grotesk"', 'sans-serif'],
+                    },
+                    colors: {
+                        neo: {
+                            yellow: '#FFDE59',
+                            blue: '#4F46E5',
+                            bg: '#f4f4f0',
+                            error: '#FF5757',
+                            success: '#00C896'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f4f4f0;
+            background-image: radial-gradient(#d1d1d1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Neobrutalist UI Components */
+        .neo-card {
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 12px;
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+        }
+        
+        @media (min-width: 640px) {
+            .neo-card {
+                box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+            }
+        }
+
+        .neo-input {
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            box-shadow: 3px 3px 0px 0px rgba(0,0,0,1);
+            transition: all 0.15s ease-out;
+            width: 100%;
+        }
+
+        .neo-input:focus {
+            outline: none;
+            box-shadow: 5px 5px 0px 0px rgba(0,0,0,1);
+            transform: translate(-2px, -2px);
+            background-color: #ffffe0;
+        }
+
+        .neo-btn {
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+            transition: all 0.1s ease-out;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .neo-btn:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+        }
+
+        .neo-btn:active, .neo-btn.active {
+            transform: translate(2px, 2px) !important;
+            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1) !important;
+            background-color: #FFDE59;
+        }
+
+        @media (min-width: 640px) {
+            .neo-btn:active, .neo-btn.active {
+                transform: translate(4px, 4px) !important;
+            }
+        }
+
+        .neo-btn-primary {
+            background-color: #FFDE59;
+        }
+
+        /* Snackbar/Toast */
+        #snackbar {
+            visibility: hidden;
+            min-width: 250px;
+            width: 90%;
+            max-width: 400px;
+            background-color: white;
+            color: black;
+            text-align: center;
+            border: 3px solid black;
+            border-radius: 8px;
+            padding: 16px 20px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+            font-weight: 700;
+        }
+
+        #snackbar.show {
+            visibility: visible;
+            animation: fadein 0.3s, fadeout 0.3s 2.7s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0; transform: translate(-50%, 20px);}
+            to {bottom: 20px; opacity: 1; transform: translate(-50%, 0);}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 20px; opacity: 1; transform: translate(-50%, 0);}
+            to {bottom: 0; opacity: 0; transform: translate(-50%, 20px);}
+        }
+
+        /* Custom Scrollbar for results */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f4f4f0;
+            border-left: 2px solid black;
+            border-top: 2px solid black;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: black;
+            border-radius: 0px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-black">
+
+    <!-- Slide-out Navigation Drawer -->
+    <div id="drawerOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 opacity-0"></div>
+    <div id="navDrawer" class="fixed top-0 left-0 h-full w-64 sm:w-72 bg-[#f4f4f0] border-r-4 border-black shadow-[8px_0px_0px_0px_rgba(0,0,0,1)] z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="h-16 sm:h-20 border-b-4 border-black flex items-center justify-between px-4 bg-neo-yellow shrink-0">
+            <span class="font-black text-xl uppercase tracking-wider flex items-center">
+                <span class="material-icons mr-2">menu_open</span> Menu
+            </span>
+            <button id="closeDrawerBtn" class="neo-btn flex items-center justify-center w-8 h-8 rounded-full">
+                <span class="material-icons text-sm">close</span>
+            </button>
+        </div>
+        <div class="flex flex-col p-4 gap-4 overflow-y-auto">
+            <button class="nav-item neo-btn active px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="entrySection">
+                <span class="material-icons mr-3">add_circle_outline</span> New Bill
+            </button>
+            <button class="nav-item neo-btn px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="searchSection">
+                <span class="material-icons mr-3">search</span> Search Entry
+            </button>
+            <button class="nav-item neo-btn px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="todaySection">
+                <span class="material-icons mr-3">today</span> Today's Bills
+            </button>
+            
+            <div class="border-t-4 border-black my-2"></div>
+            
+            <!-- PWA Install Button -->
+            <button id="installAppBtn" class="neo-btn bg-neo-success px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center hidden transition-transform hover:-translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <span class="material-icons mr-3">download</span> Install App
+            </button>
+        </div>
+    </div>
+
+    <!-- App Bar -->
+    <header class="bg-white border-b-4 border-black w-full fixed top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 sm:h-20">
+                <div class="flex items-center gap-2 sm:gap-4 overflow-hidden">
+                    <button id="hamburgerBtn" class="neo-btn flex items-center justify-center w-10 sm:w-12 h-10 sm:h-12 rounded-lg flex-shrink-0 mr-1 sm:mr-2">
+                        <span class="material-icons">menu</span>
+                    </button>
+                    <div class="bg-neo-yellow border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black p-1.5 sm:p-2 rounded-lg flex items-center justify-center flex-shrink-0 hidden sm:flex">
+                        <span class="material-icons text-xl sm:text-2xl">local_shipping</span>
+                    </div>
+                    <div class="truncate">
+                        <h1 class="text-lg sm:text-2xl font-black tracking-tight uppercase leading-none mb-0.5 sm:mb-1 truncate">PCS Billing</h1>
+                        <p class="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase bg-black text-white inline-block px-1.5 py-0.5">Courier & Cargo</p>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 ml-2">
+                    <button id="helpBtn" class="neo-btn flex items-center justify-center w-10 h-10 rounded-full" title="Setup Instructions">
+                        <span class="material-icons text-lg">help_outline</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+        
+        <!-- Form Section -->
+        <div id="entrySection">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">New Bill Entry</h2>
+                    <p class="font-medium mt-1 text-sm sm:text-base">Fill in the details below to generate a new record.</p>
+                </div>
+                <div class="inline-flex items-center px-4 py-2 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm font-bold self-start sm:self-auto rounded-lg">
+                    <span class="material-icons text-sm mr-2">calendar_today</span>
+                    <span id="currentDateDisplay"></span>
+                </div>
+            </div>
+
+            <!-- Form Card -->
+            <div class="neo-card overflow-hidden">
+                <form id="billingForm" class="p-4 sm:p-8">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-6">
+                        
+                        <!-- Date -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2">
+                            <label for="date" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Date</label>
+                            <input type="date" id="date" name="Date" required class="neo-input p-2.5 sm:p-3" value="">
+                        </div>
+
+                        <!-- C-Note No -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2">
+                            <label for="cnote" class="font-bold text-xs sm:text-sm uppercase tracking-wider">C-Note No.</label>
+                            <input type="text" id="cnote" name="C-Note No" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                        </div>
+
+                        <!-- Party Name -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
+                            <label for="partyName" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Party Name</label>
+                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                        </div>
+
+                        <!-- Destination/Place -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
+                            <label for="destination" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Destination / Place</label>
+                            <input type="text" id="destination" name="Destination" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                        </div>
+
+                        <!-- Weight -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2">
+                            <label for="weight" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Weight (Kg)</label>
+                            <input type="number" step="0.01" id="weight" name="Weight (Kg)" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="flex flex-col gap-1.5 sm:gap-2">
+                            <label for="amount" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Amount (₹)</label>
+                            <input type="number" step="0.01" id="amount" name="Amount" required autocomplete="off" class="neo-input p-2.5 sm:p-3 text-base sm:text-lg font-bold">
+                        </div>
+                    </div>
+
+                    <div class="mt-8 sm:mt-10 pt-5 sm:pt-6 border-t-2 border-black flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
+                        <button type="button" id="resetBtn" class="neo-btn w-full sm:w-auto px-8 py-3 text-sm sm:text-base uppercase tracking-wider">
+                            Clear
+                        </button>
+                        <button type="submit" id="submitBtn" class="neo-btn neo-btn-primary w-full sm:w-auto px-10 py-3 text-sm sm:text-base uppercase tracking-wider flex items-center justify-center">
+                            <span class="material-icons mr-2 text-lg sm:text-xl" id="submitIcon">save</span>
+                            <span id="submitText">Save Bill</span>
+                            
+                            <!-- Loading Spinner -->
+                            <svg id="loadingSpinner" class="animate-spin -ml-1 mr-2 h-5 w-5 text-black hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div> <!-- End of entrySection -->
+
+        <!-- Search Section -->
+        <div id="searchSection" class="hidden">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">Search Records</h2>
+                    <p class="font-medium mt-1 text-sm sm:text-base">Look up previous bills by Party Name or C-Note No.</p>
+                </div>
+            </div>
+            
+            <div class="neo-card p-4 sm:p-8">
+                <div class="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8 items-stretch sm:items-end">
+                    <div class="flex flex-col gap-1.5 sm:gap-2 flex-grow w-full">
+                        <label for="searchInput" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Enter Party Name or C-Note No.</label>
+                        <input type="text" id="searchInput" autocomplete="off" class="neo-input p-2.5 sm:p-3 w-full">
+                    </div>
+                    <button type="button" id="doSearchBtn" class="neo-btn neo-btn-primary w-full sm:w-auto px-6 sm:px-8 py-3 uppercase tracking-wider flex items-center justify-center h-[48px] sm:h-[52px]">
+                        <span class="material-icons mr-2 text-lg sm:text-xl" id="searchIcon">search</span>
+                        <span id="searchText" class="text-sm sm:text-base">Search</span>
+                    </button>
+                </div>
+                
+                <div id="searchResults" class="space-y-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto p-1 sm:p-2">
+                    <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
+                        <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">search</span>
+                        <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Enter a query to find bills</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today Bill Section -->
+        <div id="todaySection" class="hidden">
+            <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">Today's Bills</h2>
+                    <p class="font-medium mt-1 text-sm sm:text-base">Showing all records generated today.</p>
+                </div>
+                <button type="button" id="refreshTodayBtn" class="neo-btn inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-2 uppercase tracking-wider text-xs sm:text-sm self-start sm:self-auto w-full sm:w-auto">
+                    <span class="material-icons text-sm mr-2" id="refreshIcon">refresh</span>
+                    Refresh
+                </button>
+            </div>
+            
+            <div class="neo-card p-4 sm:p-8 bg-gray-50">
+                <div id="todayResults" class="space-y-4 max-h-[400px] sm:max-h-[500px] overflow-y-auto p-1 sm:p-2">
+                    <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
+                        <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">receipt_long</span>
+                        <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Click refresh to load bills</p>
+                    </div>
+                </div>
+                <div id="todaySummary" class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t-4 border-black flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 font-black text-lg sm:text-2xl hidden">
+                    <span class="uppercase">Total Amount:</span>
+                    <span id="todayTotalAmount" class="text-white bg-black px-4 py-1.5 sm:py-1 border-2 border-black shadow-[3px_3px_0px_0px_#FFDE59] sm:shadow-[4px_4px_0px_0px_#FFDE59] break-all text-center">₹0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Instructions Modal (Hidden by default) -->
+        <div id="setupModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-3 sm:p-4">
+            <div class="neo-card max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
+                <div class="px-4 sm:px-6 py-4 sm:py-5 border-b-4 border-black flex justify-between items-center bg-neo-yellow flex-shrink-0">
+                    <h3 class="text-lg sm:text-xl font-black uppercase flex items-center">
+                        <span class="material-icons mr-2 text-xl sm:text-2xl">settings</span>
+                        Backend Setup
+                    </h3>
+                    <button id="closeModalBtn" class="neo-btn flex items-center justify-center w-8 h-8 rounded-full flex-shrink-0 ml-2">
+                        <span class="material-icons text-sm">close</span>
+                    </button>
+                </div>
+                <div class="p-4 sm:p-6 text-sm sm:text-base font-medium space-y-4 bg-white overflow-y-auto flex-grow">
+                    <p>To connect this form to your Google Sheet, follow these steps:</p>
+                    <ol class="list-decimal pl-5 space-y-3 font-bold">
+                        <li>Create a new Google Sheet.</li>
+                        <li>Create headers in the first row exactly as follows: <br>
+                            <code class="bg-gray-100 p-2 border-2 border-black block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap">Date | C-Note No | Party Name | Destination | Weight (Kg) | Amount</code>
+                        </li>
+                        <li>Go to <strong>Extensions > Apps Script</strong>.</li>
+                        <li>Paste the following code:</li>
+                    </ol>
+                    <pre class="bg-black text-[#FFDE59] p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] rounded-lg text-[10px] sm:text-xs overflow-x-auto font-mono">
+function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rowData = [e.parameter['Date'], e.parameter['C-Note No'], e.parameter['Party Name'], e.parameter['Destination'], e.parameter['Weight (Kg)'], e.parameter['Amount']];
+    sheet.appendRow(rowData);
+    return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+  } catch (error) { return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT); }
+}
+
+function doGet(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var data = sheet.getDataRange().getValues();
+    var action = e.parameter.action;
+    var query = e.parameter.search ? e.parameter.search.toLowerCase() : "";
+    var results = [];
+    if (data.length > 1) {
+      var headers = data[0];
+      for (var i = 1; i < data.length; i++) {
+        var rowDate = new Date(data[i][0]);
+        var isToday = false;
+        
+        if (action === 'today') {
+          var today = new Date();
+          if (rowDate.getDate() == today.getDate() && rowDate.getMonth() == today.getMonth() && rowDate.getFullYear() == today.getFullYear()) {
+            isToday = true;
+          }
+        }
+        
+        var matchesSearch = false;
+        if (query && (data[i][2].toString().toLowerCase().indexOf(query) !== -1 || data[i][1].toString().toLowerCase().indexOf(query) !== -1)) {
+          matchesSearch = true;
+        }
+        
+        if (isToday || matchesSearch) {
+          var obj = {};
+          for (var j = 0; j < headers.length; j++) { obj[headers[j]] = data[i][j]; }
+          results.push(obj);
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify(results)).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) { return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON); }
+}
+                    </pre>
+                    <ol class="list-decimal pl-5 space-y-3 font-bold" start="5">
+                        <li>Click <strong>Deploy > Manage deployments</strong>, edit (pencil icon), create a <strong>New version</strong> and deploy.</li>
+                        <li class="pt-2 border-t-2 border-black mt-2">
+                            <strong>To fully enable App Installation:</strong> Create a blank file named <code>sw.js</code> in your GitHub repository alongside <code>index.html</code> and paste this line inside it:<br>
+                            <code class="bg-gray-100 p-2 border-2 border-black block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap">self.addEventListener('fetch', function(e) {});</code>
+                        </li>
+                    </ol>
+                </div>
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t-4 border-black bg-white flex justify-end flex-shrink-0">
+                    <button id="closeModalBtn2" class="neo-btn px-6 sm:px-8 py-2 text-sm sm:text-base uppercase tracking-wider w-full sm:w-auto">Understood</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Snackbar for Notifications -->
+    <div id="snackbar">Data saved successfully!</div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION
+        // ==========================================
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx7U7_4m5RLH09ntXAHqGqeE6b-tG9mIVHwlIftBxodJHOhFhthAW36TvzrYgfgEmMLYg/exec"; 
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- PWA SETUP & MANIFEST GENERATION ---
+            const manifestData = {
+                "name": "PCS Billing",
+                "short_name": "PCS",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#f4f4f0",
+                "theme_color": "#f4f4f0",
+                "description": "Courier & Cargo Billing System",
+                "icons": [{
+                    "src": "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000000'%3E%3Cpath d='M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-8.5 1.5h-2.5V6H12v3.5zm2.5 0H15V6h1.5v3.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-8.5l1.96 2.5H17V9.5h2.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z'/%3E%3C/svg%3E",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
+            const manifestLink = document.createElement('link');
+            manifestLink.rel = 'manifest';
+            manifestLink.href = URL.createObjectURL(manifestBlob);
+            document.head.appendChild(manifestLink);
+
+            // Register Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js').catch(err => {
+                        console.log('SW not registered: Create sw.js in GitHub to fully enable PWA installation triggers.');
+                    });
+                });
+            }
+
+            // Handle Install Prompt (Chrome/Android)
+            let deferredPrompt;
+            const installAppBtn = document.getElementById('installAppBtn');
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault(); // Prevent standard mini-infobar
+                deferredPrompt = e;
+                installAppBtn.classList.remove('hidden'); // Show our custom install button
+            });
+
+            installAppBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        installAppBtn.classList.add('hidden'); // Hide if accepted
+                    }
+                    deferredPrompt = null;
+                }
+            });
+            // --- END PWA SETUP ---
+            
+            const form = document.getElementById('billingForm');
+            const dateInput = document.getElementById('date');
+            const displayDate = document.getElementById('currentDateDisplay');
+            const submitBtn = document.getElementById('submitBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const submitText = document.getElementById('submitText');
+            const submitIcon = document.getElementById('submitIcon');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+
+            // Help Modal Logic
+            const helpBtn = document.getElementById('helpBtn');
+            const setupModal = document.getElementById('setupModal');
+            const closeBtns = [document.getElementById('closeModalBtn'), document.getElementById('closeModalBtn2')];
+
+            helpBtn.addEventListener('click', () => setupModal.classList.remove('hidden'));
+            closeBtns.forEach(btn => btn.addEventListener('click', () => setupModal.classList.add('hidden')));
+
+            // Initialize Date to Today
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            displayDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+
+            // Reset Form Logic
+            resetBtn.addEventListener('click', () => {
+                form.reset();
+                dateInput.value = today; 
+            });
+
+            // Form Submit Logic
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                // UI Loading State
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
+                submitText.textContent = "SAVING...";
+                submitIcon.classList.add('hidden');
+                loadingSpinner.classList.remove('hidden');
+
+                // Collect Data
+                const formData = new FormData(form);
+
+                if (!APPS_SCRIPT_URL) {
+                    setTimeout(() => {
+                        showSnackbar("Demo: Bill Saved!");
+                        resetFormUI();
+                    }, 1000);
+                    return;
+                }
+
+                // REAL MODE: Send to Google Sheets
+                try {
+                    await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors' 
+                    });
+
+                    showSnackbar("Bill Saved Successfully!", false);
+                    resetFormUI();
+                    
+                } catch (error) {
+                    console.error('Error!', error.message);
+                    showSnackbar("Error saving bill.", true);
+                    
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    submitText.textContent = "SAVE BILL";
+                    submitIcon.classList.remove('hidden');
+                    loadingSpinner.classList.add('hidden');
+                }
+            });
+
+            function resetFormUI() {
+                form.reset();
+                dateInput.value = today;
+
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                submitText.textContent = "SAVE BILL";
+                submitIcon.classList.remove('hidden');
+                loadingSpinner.classList.add('hidden');
+                
+                document.getElementById('cnote').focus();
+            }
+
+            function showSnackbar(message, isError = false) {
+                const snackbar = document.getElementById("snackbar");
+                snackbar.textContent = message;
+                if(isError) {
+                    snackbar.style.backgroundColor = "#FF5757";
+                    snackbar.style.color = "white";
+                } else {
+                    snackbar.style.backgroundColor = "#00C896";
+                    snackbar.style.color = "black";
+                }
+                snackbar.className = "show";
+                setTimeout(function(){ 
+                    snackbar.className = snackbar.className.replace("show", ""); 
+                }, 3000);
+            }
+
+            // Navigation Drawer Logic
+            const navItems = document.querySelectorAll('.nav-item');
+            const entrySection = document.getElementById('entrySection');
+            const searchSection = document.getElementById('searchSection');
+            const todaySection = document.getElementById('todaySection');
+            
+            const hamburgerBtn = document.getElementById('hamburgerBtn');
+            const closeDrawerBtn = document.getElementById('closeDrawerBtn');
+            const navDrawer = document.getElementById('navDrawer');
+            const drawerOverlay = document.getElementById('drawerOverlay');
+
+            const sections = {
+                'entrySection': entrySection,
+                'searchSection': searchSection,
+                'todaySection': todaySection
+            };
+
+            function toggleDrawer(show) {
+                if (show) {
+                    drawerOverlay.classList.remove('hidden');
+                    // Slight delay to allow display:block to apply before animating opacity
+                    setTimeout(() => {
+                        drawerOverlay.classList.remove('opacity-0');
+                        navDrawer.classList.remove('-translate-x-full');
+                    }, 10);
+                } else {
+                    drawerOverlay.classList.add('opacity-0');
+                    navDrawer.classList.add('-translate-x-full');
+                    setTimeout(() => {
+                        drawerOverlay.classList.add('hidden');
+                    }, 300);
+                }
+            }
+
+            hamburgerBtn.addEventListener('click', () => toggleDrawer(true));
+            closeDrawerBtn.addEventListener('click', () => toggleDrawer(false));
+            drawerOverlay.addEventListener('click', () => toggleDrawer(false));
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const targetId = item.getAttribute('data-target');
+                    
+                    // Reset active states in menu
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // Hide all sections
+                    Object.values(sections).forEach(sec => sec.classList.add('hidden'));
+                    
+                    // Show target section
+                    sections[targetId].classList.remove('hidden');
+
+                    // Close the drawer automatically
+                    toggleDrawer(false);
+
+                    // If opening Today tab, fetch data automatically
+                    if(targetId === 'todaySection') {
+                        loadTodayBills();
+                    }
+                });
+            });
+
+            // Generate Neobrutalist Result Card
+            function generateResultCard(item, dateStr, amount) {
+                return `
+                <div class="bg-white border-2 border-black rounded-lg p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row justify-between gap-3 sm:gap-4 transition-transform hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-2 sm:mb-4 mx-0.5 sm:mx-1">
+                    <div class="overflow-hidden">
+                        <div class="font-black text-lg sm:text-xl uppercase mb-1 truncate">${item['Party Name'] || '-'}</div>
+                        <div class="text-xs sm:text-sm font-bold flex flex-wrap gap-x-3 gap-y-2">
+                            <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded"><span class="material-icons text-[14px] sm:text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
+                            <span class="flex items-center bg-[#f4f4f0] px-2 py-1 border border-black rounded"><span class="material-icons text-[14px] sm:text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="text-left sm:text-right flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center border-t-2 sm:border-t-0 border-black sm:border-transparent pt-3 sm:pt-0 mt-2 sm:mt-0">
+                        <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black">₹${amount.toFixed(2)}</div>
+                        <div class="text-xs sm:text-sm font-bold mt-0 sm:mt-1 text-gray-600 sm:text-black">${item['Weight (Kg)'] || '0'} Kg &bull; <span class="truncate inline-block align-bottom max-w-[100px] sm:max-w-[150px]">${item['Destination'] || '-'}</span></div>
+                    </div>
+                </div>
+                `;
+            }
+
+            // Search Logic
+            const searchInput = document.getElementById('searchInput');
+            const doSearchBtn = document.getElementById('doSearchBtn');
+            const searchResults = document.getElementById('searchResults');
+            const searchIcon = document.getElementById('searchIcon');
+            const searchText = document.getElementById('searchText');
+
+            doSearchBtn.addEventListener('click', async () => {
+                const query = searchInput.value.trim();
+                if (!query) {
+                    showSnackbar("Please enter a Party Name or C-Note No.", true);
+                    return;
+                }
+
+                if (!APPS_SCRIPT_URL) {
+                    showSnackbar("Demo mode: Setup Apps Script.", true);
+                    return;
+                }
+
+                // UI Loading state
+                doSearchBtn.disabled = true;
+                searchIcon.textContent = "hourglass_empty";
+                searchText.textContent = "SEARCHING";
+                searchResults.innerHTML = '<div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white animate-pulse font-bold text-sm sm:text-base uppercase">Searching...</div>';
+
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?search=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+
+                    if (!data || data.length === 0) {
+                        searchResults.innerHTML = `
+                            <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
+                                <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">search_off</span>
+                                <p class="font-bold text-sm sm:text-base uppercase tracking-wider">No bills found for "${query}"</p>
+                            </div>`;
+                    } else {
+                        searchResults.innerHTML = data.reverse().map(item => {
+                            let dateStr = item['Date'];
+                            try {
+                                if(dateStr) {
+                                    const d = new Date(dateStr);
+                                    if(!isNaN(d)) dateStr = d.toLocaleDateString('en-US', {day:'numeric', month:'short', year:'numeric'});
+                                }
+                            } catch(e){}
+                            let amount = parseFloat(item['Amount']) || 0;
+                            return generateResultCard(item, dateStr, amount);
+                        }).join('');
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                    showSnackbar("Error fetching data.", true);
+                    searchResults.innerHTML = `
+                        <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white text-neo-error">
+                            <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">error_outline</span>
+                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Error fetching data</p>
+                        </div>`;
+                } finally {
+                    doSearchBtn.disabled = false;
+                    searchIcon.textContent = "search";
+                    searchText.textContent = "SEARCH";
+                }
+            });
+
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    doSearchBtn.click();
+                }
+            });
+
+            // Today's Bills Logic
+            const refreshTodayBtn = document.getElementById('refreshTodayBtn');
+            const todayResults = document.getElementById('todayResults');
+            const todaySummary = document.getElementById('todaySummary');
+            const todayTotalAmount = document.getElementById('todayTotalAmount');
+            const refreshIcon = document.getElementById('refreshIcon');
+
+            refreshTodayBtn.addEventListener('click', loadTodayBills);
+
+            async function loadTodayBills() {
+                if (!APPS_SCRIPT_URL) return;
+
+                refreshIcon.classList.add('animate-spin');
+                todayResults.innerHTML = '<div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white animate-pulse font-bold text-sm sm:text-base uppercase">Fetching...</div>';
+                todaySummary.classList.add('hidden');
+
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=today`);
+                    const data = await response.json();
+
+                    if (!data || data.length === 0) {
+                        todayResults.innerHTML = `
+                            <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
+                                <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3 text-gray-400">receipt_long</span>
+                                <p class="font-bold text-sm sm:text-base uppercase tracking-wider text-gray-500">No bills generated today yet</p>
+                            </div>`;
+                    } else {
+                        let totalAmount = 0;
+                        todayResults.innerHTML = data.reverse().map(item => {
+                            let dateStr = item['Date'];
+                            try {
+                                if(dateStr) {
+                                    const d = new Date(dateStr);
+                                    if(!isNaN(d)) dateStr = d.toLocaleDateString('en-US', {day:'numeric', month:'short', year:'numeric'});
+                                }
+                            } catch(e){}
+                            let amount = parseFloat(item['Amount']) || 0;
+                            totalAmount += amount;
+                            
+                            return generateResultCard(item, dateStr, amount);
+                        }).join('');
+                        
+                        todayTotalAmount.textContent = `₹${totalAmount.toFixed(2)}`;
+                        todaySummary.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    console.error('Fetch error:', error);
+                    showSnackbar("Error fetching today's bills.", true);
+                    todayResults.innerHTML = `
+                        <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white text-neo-error">
+                            <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">error_outline</span>
+                            <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Error fetching data</p>
+                        </div>`;
+                } finally {
+                    refreshIcon.classList.remove('animate-spin');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
