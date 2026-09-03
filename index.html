@@ -277,10 +277,10 @@
                             <input type="text" id="destination" name="Destination" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
                         </div>
 
-                        <!-- Weight -->
+                        <!-- Weight (Optional) -->
                         <div class="flex flex-col gap-1.5 sm:gap-2">
-                            <label for="weight" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Weight (Kg)</label>
-                            <input type="number" step="0.01" id="weight" name="Weight (Kg)" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                            <label for="weight" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Weight (Kg) <span class="text-xs font-normal text-gray-500">(Optional)</span></label>
+                            <input type="number" step="0.01" id="weight" name="Weight (Kg)" autocomplete="off" class="neo-input p-2.5 sm:p-3">
                         </div>
 
                         <!-- Amount -->
@@ -936,6 +936,7 @@ function doGet(e) {
             // Generate Neobrutalist Result Card (Redesigned to prevent overlaps)
             function generateResultCard(item, dateStr, amount) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
+                const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Weight';
                 
                 return `
                 <div class="bg-white border-2 border-black rounded-lg p-4 sm:p-5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] sm:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex flex-col gap-4 transition-transform hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] sm:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] mb-3 mx-0.5 sm:mx-1">
@@ -951,7 +952,7 @@ function doGet(e) {
                         </div>
                         <div class="text-right shrink-0">
                             <div class="font-black text-xl sm:text-2xl text-[#4F46E5] sm:text-black leading-none mb-1.5">₹${amount.toFixed(2)}</div>
-                            <div class="text-xs sm:text-sm font-bold text-gray-600 sm:text-black bg-gray-100 px-2 py-1 rounded inline-block">${item['Weight (Kg)'] || '0'} Kg</div>
+                            <div class="text-xs sm:text-sm font-bold text-gray-600 sm:text-black bg-gray-100 px-2 py-1 rounded inline-block">${weightDisplay}</div>
                         </div>
                     </div>
 
@@ -992,11 +993,13 @@ function doGet(e) {
                     } catch(e){}
                     
                     const amount = parseFloat(itemData['Amount']) || 0;
+                    const weightVal = itemData['Weight (Kg)'] ? `${itemData['Weight (Kg)']} Kg` : '-';
+
                     document.getElementById('printPartyName').textContent = itemData['Party Name'] || '-';
                     document.getElementById('printDate').textContent = formattedDate || '-';
                     document.getElementById('printCNote').textContent = itemData['C-Note No'] || '-';
                     document.getElementById('printDest').textContent = itemData['Destination'] || '-';
-                    document.getElementById('printWeight').textContent = itemData['Weight (Kg)'] || '0';
+                    document.getElementById('printWeight').textContent = weightVal;
                     document.getElementById('printAmount').textContent = '₹' + amount.toFixed(2);
 
                     const printAreaSingle = document.getElementById('printArea');
@@ -1047,7 +1050,7 @@ function doGet(e) {
                     document.getElementById('cnote').value = itemData['C-Note No'];
                     document.getElementById('partyName').value = itemData['Party Name'];
                     document.getElementById('destination').value = itemData['Destination'];
-                    document.getElementById('weight').value = itemData['Weight (Kg)'];
+                    document.getElementById('weight').value = itemData['Weight (Kg)'] || '';
                     document.getElementById('amount').value = itemData['Amount'];
                     
                     // Set Editing State
@@ -1221,7 +1224,7 @@ function doGet(e) {
                             <td class="border border-black p-2 text-sm">${dateStr}</td>
                             <td class="border border-black p-2 text-sm">${item['C-Note No'] || '-'}</td>
                             <td class="border border-black p-2 text-sm truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
-                            <td class="border border-black p-2 text-sm text-right">${wt}</td>
+                            <td class="border border-black p-2 text-sm text-right">${wt ? wt + ' Kg' : '-'}</td>
                             <td class="border border-black p-2 text-sm text-right">₹${amt.toFixed(2)}</td>
                         </tr>
                     `;
@@ -1233,7 +1236,7 @@ function doGet(e) {
                 document.getElementById('monthlyPrintMonth').textContent = dateObj.toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
                 
                 document.getElementById('monthlyPrintTbody').innerHTML = tbodyHtml;
-                document.getElementById('monthlyPrintTotalWeight').textContent = totalWt.toFixed(2);
+                document.getElementById('monthlyPrintTotalWeight').textContent = totalWt ? totalWt.toFixed(2) + ' Kg' : '-';
                 document.getElementById('monthlyPrintTotalAmount').textContent = '₹' + totalAmt.toFixed(2);
 
                 monthModal.classList.add('hidden');
