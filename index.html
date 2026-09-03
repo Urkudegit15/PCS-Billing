@@ -186,13 +186,13 @@
         </div>
         <div class="flex flex-col p-4 gap-4 overflow-y-auto">
             <button class="nav-item neo-btn active px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="entrySection">
-                <span class="material-icons mr-3">add_circle_outline</span> New Bill
+                <span class="material-icons mr-3">add_circle_outline</span> <span id="navEntryText">New Bill</span>
             </button>
             <button class="nav-item neo-btn px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="searchSection">
                 <span class="material-icons mr-3">search</span> Search Entry
             </button>
             <button class="nav-item neo-btn px-4 py-4 text-sm font-bold uppercase tracking-wider text-left flex items-center" data-target="todaySection">
-                <span class="material-icons mr-3">today</span> Today's Bills
+                <span class="material-icons mr-3">today</span> Daily Bills
             </button>
             
             <div class="border-t-4 border-black my-2"></div>
@@ -236,8 +236,8 @@
         <div id="entrySection">
             <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">New Bill Entry</h2>
-                    <p class="font-medium mt-1 text-sm sm:text-base">Fill in the details below to generate a new record.</p>
+                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight" id="entryTitle">New Bill Entry</h2>
+                    <p class="font-medium mt-1 text-sm sm:text-base" id="entrySubtitle">Fill in the details below to generate a new record.</p>
                 </div>
                 <div class="inline-flex items-center px-4 py-2 bg-white border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-xs sm:text-sm font-bold self-start sm:self-auto rounded-lg">
                     <span class="material-icons text-sm mr-2">calendar_today</span>
@@ -246,7 +246,7 @@
             </div>
 
             <!-- Form Card -->
-            <div class="neo-card overflow-hidden">
+            <div class="neo-card overflow-hidden transition-colors" id="entryCard">
                 <form id="billingForm" class="p-4 sm:p-8">
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-6">
@@ -266,7 +266,8 @@
                         <!-- Party Name -->
                         <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
                             <label for="partyName" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Party Name</label>
-                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="neo-input p-2.5 sm:p-3">
+                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="neo-input p-2.5 sm:p-3" list="partyNamesList">
+                            <datalist id="partyNamesList"></datalist>
                         </div>
 
                         <!-- Destination/Place -->
@@ -290,7 +291,7 @@
 
                     <div class="mt-8 sm:mt-10 pt-5 sm:pt-6 border-t-2 border-black flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
                         <button type="button" id="resetBtn" class="neo-btn w-full sm:w-auto px-8 py-3 text-sm sm:text-base uppercase tracking-wider">
-                            Clear
+                            Clear / Cancel
                         </button>
                         <button type="submit" id="submitBtn" class="neo-btn neo-btn-primary w-full sm:w-auto px-10 py-3 text-sm sm:text-base uppercase tracking-wider flex items-center justify-center">
                             <span class="material-icons mr-2 text-lg sm:text-xl" id="submitIcon">save</span>
@@ -320,7 +321,7 @@
                 <div class="flex flex-col sm:flex-row gap-4 mb-6 sm:mb-8 items-stretch sm:items-end">
                     <div class="flex flex-col gap-1.5 sm:gap-2 flex-grow w-full">
                         <label for="searchInput" class="font-bold text-xs sm:text-sm uppercase tracking-wider">Enter Party Name or C-Note No.</label>
-                        <input type="text" id="searchInput" autocomplete="off" class="neo-input p-2.5 sm:p-3 w-full">
+                        <input type="text" id="searchInput" autocomplete="off" class="neo-input p-2.5 sm:p-3 w-full" list="partyNamesList">
                     </div>
                     <button type="button" id="doSearchBtn" class="neo-btn neo-btn-primary w-full sm:w-auto px-6 sm:px-8 py-3 uppercase tracking-wider flex items-center justify-center h-[48px] sm:h-[52px]">
                         <span class="material-icons mr-2 text-lg sm:text-xl" id="searchIcon">search</span>
@@ -334,20 +335,29 @@
                         <p class="font-bold text-sm sm:text-base uppercase tracking-wider">Enter a query to find bills</p>
                     </div>
                 </div>
+
+                <!-- Monthly Bill Trigger Container (Hidden by default) -->
+                <div id="monthlyBillContainer" class="hidden mt-6 pt-6 border-t-4 border-black flex justify-end">
+                    <button id="generateMonthlyBillBtn" class="neo-btn bg-black text-white px-6 sm:px-8 py-3 text-sm sm:text-base uppercase font-bold tracking-wider flex items-center shadow-[4px_4px_0px_0px_rgba(255,222,89,1)] hover:shadow-[6px_6px_0px_0px_rgba(255,222,89,1)]">
+                        <span class="material-icons mr-2">date_range</span> Generate Monthly Bill
+                    </button>
+                </div>
             </div>
         </div>
 
-        <!-- Today Bill Section -->
+        <!-- Today / Daily Bill Section -->
         <div id="todaySection" class="hidden">
             <div class="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">Today's Bills</h2>
-                    <p class="font-medium mt-1 text-sm sm:text-base">Showing all records generated today.</p>
+                    <h2 class="text-2xl sm:text-3xl font-black uppercase leading-tight">Daily Bills</h2>
+                    <p class="font-medium mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
                 </div>
-                <button type="button" id="refreshTodayBtn" class="neo-btn inline-flex items-center justify-center px-5 sm:px-6 py-2.5 sm:py-2 uppercase tracking-wider text-xs sm:text-sm self-start sm:self-auto w-full sm:w-auto">
-                    <span class="material-icons text-sm mr-2" id="refreshIcon">refresh</span>
-                    Refresh
-                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <input type="date" id="dailyDateSelector" class="neo-input p-2 sm:p-2.5 flex-grow sm:flex-grow-0 uppercase font-bold text-sm">
+                    <button type="button" id="refreshTodayBtn" class="neo-btn inline-flex items-center justify-center px-4 sm:px-5 py-2 sm:py-2.5 uppercase tracking-wider text-xs sm:text-sm">
+                        <span class="material-icons text-sm" id="refreshIcon">refresh</span>
+                    </button>
+                </div>
             </div>
             
             <div class="neo-card p-4 sm:p-8 bg-gray-50">
@@ -384,14 +394,23 @@
                             <code class="bg-gray-100 p-2 border-2 border-black block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap">Date | C-Note No | Party Name | Destination | Weight (Kg) | Amount</code>
                         </li>
                         <li>Go to <strong>Extensions > Apps Script</strong>.</li>
-                        <li>Paste the following code (<strong>UPDATED - Hardcoded column indexing</strong>):</li>
+                        <li>Paste the following code (<strong>UPDATED for Edit, Delete, Custom Dates & Party Autocomplete</strong>):</li>
                     </ol>
                     <pre class="bg-black text-[#FFDE59] p-3 sm:p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)] sm:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] rounded-lg text-[10px] sm:text-xs overflow-x-auto font-mono">
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var rowData = [e.parameter['Date'] || '', e.parameter['C-Note No'] || '', e.parameter['Party Name'] || '', e.parameter['Destination'] || '', e.parameter['Weight (Kg)'] || '', e.parameter['Amount'] || ''];
-    sheet.appendRow(rowData);
+    var action = e.parameter.action;
+    
+    if (action === 'delete') {
+      sheet.deleteRow(parseInt(e.parameter.rowIndex));
+    } else if (action === 'edit') {
+      var rowData = [e.parameter['Date'] || '', e.parameter['C-Note No'] || '', e.parameter['Party Name'] || '', e.parameter['Destination'] || '', e.parameter['Weight (Kg)'] || '', e.parameter['Amount'] || ''];
+      sheet.getRange(parseInt(e.parameter.rowIndex), 1, 1, 6).setValues([rowData]);
+    } else {
+      var rowData = [e.parameter['Date'] || '', e.parameter['C-Note No'] || '', e.parameter['Party Name'] || '', e.parameter['Destination'] || '', e.parameter['Weight (Kg)'] || '', e.parameter['Amount'] || ''];
+      sheet.appendRow(rowData);
+    }
     return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
   } catch (error) { return ContentService.createTextOutput("Error").setMimeType(ContentService.MimeType.TEXT); }
 }
@@ -399,8 +418,25 @@ function doPost(e) {
 function doGet(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = sheet.getDataRange().getDisplayValues(); 
     var action = e.parameter.action;
+    
+    // Autocomplete for Party Names
+    if (action === 'parties') {
+      var data = sheet.getRange("C2:C").getDisplayValues();
+      var uniqueParties = [];
+      var partyMap = {};
+      for (var i = 0; i < data.length; i++) {
+        var party = data[i][0].trim();
+        if (party && !partyMap[party]) {
+          partyMap[party] = true;
+          uniqueParties.push(party);
+        }
+      }
+      return ContentService.createTextOutput(JSON.stringify(uniqueParties)).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    var data = sheet.getDataRange().getDisplayValues(); 
+    var dateQuery = e.parameter.date;
     var query = e.parameter.search ? e.parameter.search.toLowerCase() : "";
     var results = [];
     if (data.length > 1) {
@@ -408,12 +444,12 @@ function doGet(e) {
         var row = data[i];
         if(!row[0] && !row[1] && !row[2]) continue; // Skip empty rows
         
-        var isToday = false;
-        if (action === 'today') {
-          var today = new Date();
+        var matchesDate = false;
+        if (dateQuery) {
+          var qDate = new Date(dateQuery);
           var rowDate = new Date(row[0]);
-          if (!isNaN(rowDate) && rowDate.getDate() == today.getDate() && rowDate.getMonth() == today.getMonth() && rowDate.getFullYear() == today.getFullYear()) {
-            isToday = true;
+          if (!isNaN(rowDate) && !isNaN(qDate) && rowDate.getDate() == qDate.getDate() && rowDate.getMonth() == qDate.getMonth() && rowDate.getFullYear() == qDate.getFullYear()) {
+            matchesDate = true;
           }
         }
         
@@ -422,9 +458,9 @@ function doGet(e) {
           matchesSearch = true;
         }
         
-        if (isToday || matchesSearch) {
-          // Hardcode keys to indices. Prevents header typing mistakes in Sheet.
+        if (matchesDate || matchesSearch) {
           results.push({
+            'rowIndex': i + 1, // Capture Row Index for editing/deleting
             'Date': row[0],
             'C-Note No': row[1],
             'Party Name': row[2],
@@ -453,13 +489,32 @@ function doGet(e) {
             </div>
         </div>
 
+        <!-- Month Selection Modal -->
+        <div id="monthModal" class="print:hidden fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-[110] flex items-center justify-center p-3 sm:p-4 transition-opacity">
+            <div class="neo-card max-w-sm w-full p-6 bg-white flex flex-col">
+                <h3 class="text-xl sm:text-2xl font-black uppercase mb-2 flex items-center">
+                    <span class="material-icons mr-2 text-[#4F46E5]">calendar_month</span> Select Month
+                </h3>
+                <p class="text-sm font-bold text-gray-600 mb-5 uppercase tracking-wider">For Monthly Statement</p>
+                
+                <input type="month" id="monthSelector" class="neo-input p-3 sm:p-4 mb-6 font-bold uppercase tracking-wider text-lg cursor-pointer">
+                
+                <div class="flex justify-end gap-3 mt-auto">
+                    <button id="cancelMonthBtn" class="neo-btn px-5 py-2.5 text-sm uppercase tracking-wider w-1/2">Cancel</button>
+                    <button id="confirmMonthBtn" class="neo-btn neo-btn-primary px-5 py-2.5 text-sm uppercase tracking-wider w-1/2 flex items-center justify-center">
+                        <span class="material-icons mr-1.5 text-sm">print</span> Generate
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Snackbar for Notifications -->
     <div id="snackbar" class="print:hidden">Data saved successfully!</div>
 
-    <!-- PRINT INVOICE TEMPLATE (Hidden from screen, visible on print) -->
-    <div id="printArea" class="hidden print:block w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
+    <!-- PRINT INVOICE TEMPLATE - SINGLE (Hidden from screen, visible on print) -->
+    <div id="printArea" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
         
         <!-- Header Section -->
         <div class="flex justify-between items-start border-b-4 border-black pb-4 sm:pb-6 mb-6">
@@ -531,6 +586,82 @@ function doGet(e) {
         </div>
     </div>
 
+    <!-- PRINT INVOICE TEMPLATE - MONTHLY (Hidden from screen, visible on print) -->
+    <div id="printAreaMonthly" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
+        
+        <!-- Header Section -->
+        <div class="flex justify-between items-start border-b-4 border-black pb-4 sm:pb-6 mb-6">
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-[#4F46E5] print:text-black">PCS Billing</h1>
+                <p class="font-bold text-base sm:text-lg bg-black text-white inline-block px-2 py-0.5 mt-1 uppercase tracking-widest">Courier & Cargo</p>
+                <p class="text-xs sm:text-sm font-bold mt-4 max-w-md uppercase">
+                    Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001
+                </p>
+            </div>
+            <div class="text-right border-2 border-black p-3 sm:p-4 bg-[#FFDE59] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:bg-white print:border-4">
+                <p class="text-sm sm:text-base font-bold uppercase tracking-wider mb-1"><strong>Phone:</strong> 6265865576</p>
+                <p class="text-sm sm:text-base font-bold uppercase tracking-wider"><strong>PAN:</strong> AAGPU0025P</p>
+            </div>
+        </div>
+
+        <div class="text-center mb-6">
+            <h2 class="text-2xl font-black uppercase bg-[#f4f4f0] border-2 border-black inline-block px-6 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4 print:bg-white">Monthly Statement</h2>
+        </div>
+
+        <!-- Billed To -->
+        <div class="flex justify-between border-2 border-black p-4 sm:p-5 mb-8 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4">
+            <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billed To Party</p>
+                <p class="text-xl sm:text-2xl font-black uppercase mt-1" id="monthlyPrintPartyName">-</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billing Month</p>
+                <p class="text-lg sm:text-xl font-bold mt-1" id="monthlyPrintMonth">-</p>
+            </div>
+        </div>
+
+        <!-- Details Table -->
+        <table class="w-full border-collapse border-4 border-black mb-10 text-left">
+            <thead>
+                <tr class="bg-gray-100 border-b-4 border-black print:bg-white">
+                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">Date</th>
+                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">C-Note</th>
+                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">Destination</th>
+                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-right text-xs">Weight</th>
+                    <th class="p-2 font-black uppercase tracking-wider text-right text-sm">Amount</th>
+                </tr>
+            </thead>
+            <tbody id="monthlyPrintTbody">
+                <!-- dynamic rows -->
+            </tbody>
+            <tfoot>
+                <tr class="border-t-4 border-black bg-gray-100 print:bg-white">
+                    <td colspan="3" class="border-r-2 border-black p-3 font-black text-right uppercase tracking-wider text-sm">Grand Total</td>
+                    <td class="border-r-2 border-black p-3 font-black text-right text-lg" id="monthlyPrintTotalWeight">-</td>
+                    <td class="p-3 font-black text-xl text-right" id="monthlyPrintTotalAmount">-</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Footer / Bank Details -->
+        <div class="flex flex-col sm:flex-row justify-between items-end mt-4">
+            <div class="border-2 border-black p-4 sm:p-5 bg-[#f4f4f0] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full sm:w-2/3 mb-8 sm:mb-0 print:shadow-none print:border-4 print:bg-white">
+                <p class="text-xs sm:text-sm font-black uppercase tracking-widest border-b-2 border-black pb-2 mb-3">Bank Details for Payment</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-xs sm:text-sm">
+                    <p><strong>Banking Name:</strong><br><span class="font-bold uppercase text-sm sm:text-base">Prabhakar Urkude</span></p>
+                    <p><strong>Bank:</strong><br><span class="font-bold uppercase text-sm sm:text-base">UNION BANK OF INDIA</span></p>
+                    <p><strong>A/C No:</strong><br><span class="font-mono text-base sm:text-lg font-bold bg-[#FFDE59] px-1 print:bg-transparent">520291019763005</span></p>
+                    <p><strong>IFSC:</strong><br><span class="font-mono text-base sm:text-lg font-bold">UBIN0901571</span></p>
+                </div>
+            </div>
+            
+            <div class="text-center w-full sm:w-1/3">
+                <div class="border-b-2 border-black mb-2 h-16 w-3/4 mx-auto sm:ml-auto sm:mr-0"></div>
+                <p class="font-bold text-xs sm:text-sm uppercase tracking-wider">Authorized Signatory</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         // ==========================================
         // CONFIGURATION
@@ -562,7 +693,6 @@ function doGet(e) {
             manifestLink.href = URL.createObjectURL(manifestBlob);
             document.head.appendChild(manifestLink);
 
-            // Register Service Worker
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('./sw.js').catch(err => {
@@ -571,23 +701,18 @@ function doGet(e) {
                 });
             }
 
-            // Handle Install Prompt (Chrome/Android)
             let deferredPrompt;
             const installAppBtn = document.getElementById('installAppBtn');
-
             window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault(); // Prevent standard mini-infobar
+                e.preventDefault();
                 deferredPrompt = e;
-                installAppBtn.classList.remove('hidden'); // Show our custom install button
+                installAppBtn.classList.remove('hidden');
             });
-
             installAppBtn.addEventListener('click', async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        installAppBtn.classList.add('hidden'); // Hide if accepted
-                    }
+                    if (outcome === 'accepted') installAppBtn.classList.add('hidden');
                     deferredPrompt = null;
                 }
             });
@@ -601,39 +726,79 @@ function doGet(e) {
             const submitText = document.getElementById('submitText');
             const submitIcon = document.getElementById('submitIcon');
             const loadingSpinner = document.getElementById('loadingSpinner');
+            const entryTitle = document.getElementById('entryTitle');
+            const entrySubtitle = document.getElementById('entrySubtitle');
+            const entryCard = document.getElementById('entryCard');
+            const navEntryText = document.getElementById('navEntryText');
+
+            // --- Party Name Autocomplete Logic ---
+            async function loadPartyNames() {
+                if (!APPS_SCRIPT_URL) return;
+                try {
+                    const response = await fetch(`${APPS_SCRIPT_URL}?action=parties`);
+                    const parties = await response.json();
+                    if (Array.isArray(parties) && !parties[0]?.error) {
+                        const datalist = document.getElementById('partyNamesList');
+                        datalist.innerHTML = parties.map(p => `<option value="${p}"></option>`).join('');
+                    }
+                } catch (e) {
+                    console.error("Failed to load party names", e);
+                }
+            }
+            // Load them on startup
+            loadPartyNames();
+            // --- End Party Name Autocomplete Logic ---
 
             // Help Modal Logic
             const helpBtn = document.getElementById('helpBtn');
             const setupModal = document.getElementById('setupModal');
             const closeBtns = [document.getElementById('closeModalBtn'), document.getElementById('closeModalBtn2')];
-
             helpBtn.addEventListener('click', () => setupModal.classList.remove('hidden'));
             closeBtns.forEach(btn => btn.addEventListener('click', () => setupModal.classList.add('hidden')));
 
-            // Initialize Date to Today
-            const today = new Date().toISOString().split('T')[0];
+            // Formatting Helper
+            function formatToYYYYMMDD(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                if (isNaN(d)) return dateStr;
+                let month = '' + (d.getMonth() + 1);
+                let day = '' + d.getDate();
+                let year = d.getFullYear();
+                if (month.length < 2) month = '0' + month;
+                if (day.length < 2) day = '0' + day;
+                return [year, month, day].join('-');
+            }
+
+            // Initialize Dates
+            const today = formatToYYYYMMDD(new Date());
             dateInput.value = today;
             displayDate.textContent = new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            
+            const dailyDateSelector = document.getElementById('dailyDateSelector');
+            dailyDateSelector.value = today;
+
+            let editingRowIndex = null; // State tracking for edits
 
             // Reset Form Logic
             resetBtn.addEventListener('click', () => {
-                form.reset();
-                dateInput.value = today; 
+                resetFormUI();
             });
 
-            // Form Submit Logic
+            // Form Submit Logic (Create or Edit)
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                // UI Loading State
                 submitBtn.disabled = true;
                 submitBtn.classList.add('opacity-80', 'cursor-not-allowed');
-                submitText.textContent = "SAVING...";
+                submitText.textContent = editingRowIndex ? "UPDATING..." : "SAVING...";
                 submitIcon.classList.add('hidden');
                 loadingSpinner.classList.remove('hidden');
 
-                // Collect Data
                 const formData = new FormData(form);
+                if(editingRowIndex) {
+                    formData.append('action', 'edit');
+                    formData.append('rowIndex', editingRowIndex);
+                }
 
                 if (!APPS_SCRIPT_URL) {
                     setTimeout(() => {
@@ -643,7 +808,6 @@ function doGet(e) {
                     return;
                 }
 
-                // REAL MODE: Send to Google Sheets
                 try {
                     await fetch(APPS_SCRIPT_URL, {
                         method: 'POST',
@@ -651,8 +815,9 @@ function doGet(e) {
                         mode: 'no-cors' 
                     });
 
-                    showSnackbar("Bill Saved Successfully!", false);
+                    showSnackbar(editingRowIndex ? "Bill Updated Successfully!" : "Bill Saved Successfully!", false);
                     resetFormUI();
+                    loadPartyNames(); // Refresh the dropdown with any newly added names
                     
                 } catch (error) {
                     console.error('Error!', error.message);
@@ -660,7 +825,7 @@ function doGet(e) {
                     
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
-                    submitText.textContent = "SAVE BILL";
+                    submitText.textContent = editingRowIndex ? "UPDATE BILL" : "SAVE BILL";
                     submitIcon.classList.remove('hidden');
                     loadingSpinner.classList.add('hidden');
                 }
@@ -669,9 +834,17 @@ function doGet(e) {
             function resetFormUI() {
                 form.reset();
                 dateInput.value = today;
+                editingRowIndex = null;
 
+                // Reset UI strictly to "New Bill" mode
+                entryTitle.textContent = "New Bill Entry";
+                entrySubtitle.textContent = "Fill in the details below to generate a new record.";
+                navEntryText.textContent = "New Bill";
+                entryCard.classList.remove('bg-blue-50');
+                
                 submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                submitBtn.classList.remove('opacity-80', 'cursor-not-allowed', 'bg-[#4F46E5]', 'text-white');
+                submitBtn.classList.add('neo-btn-primary', 'text-black'); // Reset back to yellow
                 submitText.textContent = "SAVE BILL";
                 submitIcon.classList.remove('hidden');
                 loadingSpinner.classList.add('hidden');
@@ -715,7 +888,6 @@ function doGet(e) {
             function toggleDrawer(show) {
                 if (show) {
                     drawerOverlay.classList.remove('hidden');
-                    // Slight delay to allow display:block to apply before animating opacity
                     setTimeout(() => {
                         drawerOverlay.classList.remove('opacity-0');
                         navDrawer.classList.remove('-translate-x-full');
@@ -733,27 +905,21 @@ function doGet(e) {
             closeDrawerBtn.addEventListener('click', () => toggleDrawer(false));
             drawerOverlay.addEventListener('click', () => toggleDrawer(false));
 
+            function switchTab(targetId) {
+                navItems.forEach(nav => {
+                    nav.classList.remove('active');
+                    if(nav.getAttribute('data-target') === targetId) nav.classList.add('active');
+                });
+                Object.values(sections).forEach(sec => sec.classList.add('hidden'));
+                sections[targetId].classList.remove('hidden');
+            }
+
             navItems.forEach(item => {
                 item.addEventListener('click', () => {
                     const targetId = item.getAttribute('data-target');
-                    
-                    // Reset active states in menu
-                    navItems.forEach(nav => nav.classList.remove('active'));
-                    item.classList.add('active');
-
-                    // Hide all sections
-                    Object.values(sections).forEach(sec => sec.classList.add('hidden'));
-                    
-                    // Show target section
-                    sections[targetId].classList.remove('hidden');
-
-                    // Close the drawer automatically
+                    switchTab(targetId);
                     toggleDrawer(false);
-
-                    // If opening Today tab, fetch data automatically
-                    if(targetId === 'todaySection') {
-                        loadTodayBills();
-                    }
+                    if(targetId === 'todaySection') loadTodayBills();
                 });
             });
 
@@ -776,21 +942,32 @@ function doGet(e) {
                             <div class="text-xs sm:text-sm font-bold mt-0 sm:mt-1 text-gray-600 sm:text-black">${item['Weight (Kg)'] || '0'} Kg &bull; <span class="truncate inline-block align-bottom max-w-[100px] sm:max-w-[150px]">${item['Destination'] || '-'}</span></div>
                         </div>
                         
-                        <button class="print-bill-btn neo-btn bg-black text-white px-3 sm:px-4 py-1.5 sm:mt-3 text-[10px] sm:text-xs uppercase font-bold tracking-wider flex items-center shadow-[2px_2px_0px_0px_rgba(255,222,89,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,222,89,1)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all ml-2 sm:ml-0" data-item="${encodedItem}">
-                            <span class="material-icons text-[14px] sm:text-[16px] mr-1 sm:mr-1.5">print</span> Print
-                        </button>
+                        <div class="flex gap-2 mt-0 sm:mt-3 justify-end w-auto">
+                            <!-- Edit Button -->
+                            <button class="edit-bill-btn neo-btn bg-white text-black px-2 py-1.5 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all" data-item="${encodedItem}" title="Edit">
+                                <span class="material-icons text-[16px] sm:text-[18px]">edit</span>
+                            </button>
+                            <!-- Delete Button -->
+                            <button class="delete-bill-btn neo-btn bg-[#FF5757] text-white px-2 py-1.5 text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all" data-item="${encodedItem}" title="Delete">
+                                <span class="material-icons text-[16px] sm:text-[18px]">delete</span>
+                            </button>
+                            <!-- Print Button -->
+                            <button class="print-bill-btn neo-btn bg-black text-white px-3 sm:px-4 py-1.5 text-[10px] sm:text-xs uppercase font-bold tracking-wider flex items-center shadow-[2px_2px_0px_0px_rgba(255,222,89,1)] hover:shadow-[3px_3px_0px_0px_rgba(255,222,89,1)] hover:-translate-y-0.5 active:translate-y-0.5 active:shadow-none transition-all" data-item="${encodedItem}">
+                                <span class="material-icons text-[14px] sm:text-[16px] mr-1 sm:mr-1.5">print</span> Print
+                            </button>
+                        </div>
                     </div>
                 </div>
                 `;
             }
 
-            // Print Event Delegation
-            document.addEventListener('click', (e) => {
+            // Delegation for Print, Edit, Delete
+            document.addEventListener('click', async (e) => {
+                
+                // 1. PRINT SINGLE BILL
                 const printBtn = e.target.closest('.print-bill-btn');
                 if (printBtn) {
                     const itemData = JSON.parse(decodeURIComponent(printBtn.getAttribute('data-item')));
-                    
-                    // Format Date
                     let formattedDate = itemData['Date'];
                     try {
                         if(formattedDate) {
@@ -800,8 +977,6 @@ function doGet(e) {
                     } catch(e){}
                     
                     const amount = parseFloat(itemData['Amount']) || 0;
-
-                    // Populate Template
                     document.getElementById('printPartyName').textContent = itemData['Party Name'] || '-';
                     document.getElementById('printDate').textContent = formattedDate || '-';
                     document.getElementById('printCNote').textContent = itemData['C-Note No'] || '-';
@@ -809,10 +984,76 @@ function doGet(e) {
                     document.getElementById('printWeight').textContent = itemData['Weight (Kg)'] || '0';
                     document.getElementById('printAmount').textContent = '₹' + amount.toFixed(2);
 
-                    // Trigger Print Modal
+                    const printAreaSingle = document.getElementById('printArea');
+                    printAreaSingle.classList.remove('hidden');
+                    printAreaSingle.classList.add('print:block');
                     window.print();
+                    printAreaSingle.classList.add('hidden');
+                    printAreaSingle.classList.remove('print:block');
+                }
+
+                // 2. DELETE BILL
+                const deleteBtn = e.target.closest('.delete-bill-btn');
+                if (deleteBtn) {
+                    const itemData = JSON.parse(decodeURIComponent(deleteBtn.getAttribute('data-item')));
+                    
+                    if(confirm(`Are you sure you want to delete the bill for ${itemData['Party Name']} (C-Note: ${itemData['C-Note No']})?\n\nThis action cannot be undone.`)) {
+                        
+                        // Optimistically remove from UI
+                        const card = deleteBtn.closest('.bg-white.border-2');
+                        if (card) card.remove();
+                        showSnackbar("Deleting bill...", false);
+
+                        if(!APPS_SCRIPT_URL) return; // Demo guard
+
+                        const fd = new FormData();
+                        fd.append('action', 'delete');
+                        fd.append('rowIndex', itemData.rowIndex);
+
+                        try {
+                            await fetch(APPS_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
+                            showSnackbar("Bill Deleted Successfully!");
+                        } catch(err) {
+                            showSnackbar("Error deleting bill. Try again.", true);
+                        }
+                    }
+                }
+
+                // 3. EDIT BILL
+                const editBtn = e.target.closest('.edit-bill-btn');
+                if (editBtn) {
+                    const itemData = JSON.parse(decodeURIComponent(editBtn.getAttribute('data-item')));
+                    
+                    // Switch to form tab
+                    switchTab('entrySection');
+                    
+                    // Populate data
+                    document.getElementById('date').value = formatToYYYYMMDD(itemData['Date']);
+                    document.getElementById('cnote').value = itemData['C-Note No'];
+                    document.getElementById('partyName').value = itemData['Party Name'];
+                    document.getElementById('destination').value = itemData['Destination'];
+                    document.getElementById('weight').value = itemData['Weight (Kg)'];
+                    document.getElementById('amount').value = itemData['Amount'];
+                    
+                    // Set Editing State
+                    editingRowIndex = itemData.rowIndex;
+                    
+                    // Update UI to show Editing mode
+                    entryTitle.textContent = "Edit Bill Record";
+                    entrySubtitle.textContent = "Update details for the selected record.";
+                    navEntryText.textContent = "Edit Bill";
+                    entryCard.classList.add('bg-blue-50');
+
+                    submitBtn.classList.remove('neo-btn-primary', 'text-black');
+                    submitBtn.classList.add('bg-[#4F46E5]', 'text-white');
+                    submitText.textContent = "UPDATE BILL";
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             });
+
+            // State variable to store current search results for monthly generation
+            let currentSearchData = [];
 
             // Search Logic
             const searchInput = document.getElementById('searchInput');
@@ -820,6 +1061,7 @@ function doGet(e) {
             const searchResults = document.getElementById('searchResults');
             const searchIcon = document.getElementById('searchIcon');
             const searchText = document.getElementById('searchText');
+            const monthlyBillContainer = document.getElementById('monthlyBillContainer');
 
             doSearchBtn.addEventListener('click', async () => {
                 const query = searchInput.value.trim();
@@ -833,11 +1075,11 @@ function doGet(e) {
                     return;
                 }
 
-                // UI Loading state
                 doSearchBtn.disabled = true;
                 searchIcon.textContent = "hourglass_empty";
                 searchText.textContent = "SEARCHING";
                 searchResults.innerHTML = '<div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white animate-pulse font-bold text-sm sm:text-base uppercase">Searching...</div>';
+                monthlyBillContainer.classList.add('hidden'); 
 
                 try {
                     const response = await fetch(`${APPS_SCRIPT_URL}?search=${encodeURIComponent(query)}`);
@@ -856,13 +1098,15 @@ function doGet(e) {
                     }
 
                     if (!data || data.length === 0) {
+                        currentSearchData = [];
                         searchResults.innerHTML = `
                             <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
                                 <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3">search_off</span>
                                 <p class="font-bold text-sm sm:text-base uppercase tracking-wider">No bills found for "${query}"</p>
                             </div>`;
                     } else {
-                        searchResults.innerHTML = data.reverse().map(item => {
+                        currentSearchData = data.reverse();
+                        searchResults.innerHTML = currentSearchData.map(item => {
                             let dateStr = item['Date'];
                             try {
                                 if(dateStr) {
@@ -873,9 +1117,12 @@ function doGet(e) {
                             let amount = parseFloat(item['Amount']) || 0;
                             return generateResultCard(item, dateStr, amount);
                         }).join('');
+                        
+                        monthlyBillContainer.classList.remove('hidden');
                     }
                 } catch (error) {
                     console.error('Search error:', error);
+                    currentSearchData = [];
                     let errMsg = "Error fetching data.";
                     if(error.message === "NOT_NEW_VERSION") errMsg = "Deploy Apps Script as 'New version'!";
                     else if(error.message.startsWith("APPS_SCRIPT_ERROR")) errMsg = "Backend Error. Check sheet.";
@@ -900,7 +1147,92 @@ function doGet(e) {
                 }
             });
 
-            // Today's Bills Logic
+            // Monthly Bill Generation Logic
+            const generateMonthlyBillBtn = document.getElementById('generateMonthlyBillBtn');
+            const monthModal = document.getElementById('monthModal');
+            const cancelMonthBtn = document.getElementById('cancelMonthBtn');
+            const confirmMonthBtn = document.getElementById('confirmMonthBtn');
+            const monthSelector = document.getElementById('monthSelector');
+
+            generateMonthlyBillBtn.addEventListener('click', () => {
+                monthModal.classList.remove('hidden');
+                const now = new Date();
+                const mStr = (now.getMonth() + 1).toString().padStart(2, '0');
+                monthSelector.value = `${now.getFullYear()}-${mStr}`;
+            });
+
+            cancelMonthBtn.addEventListener('click', () => {
+                monthModal.classList.add('hidden');
+            });
+
+            confirmMonthBtn.addEventListener('click', () => {
+                const selectedMonthStr = monthSelector.value;
+                if (!selectedMonthStr) {
+                    showSnackbar("Please select a valid month.", true);
+                    return;
+                }
+
+                const [selYear, selMonth] = selectedMonthStr.split('-');
+                const sY = parseInt(selYear);
+                const sM = parseInt(selMonth);
+
+                const filteredMonthlyBills = currentSearchData.filter(item => {
+                    let d = new Date(item['Date']);
+                    if (isNaN(d)) return false; 
+                    return d.getFullYear() === sY && (d.getMonth() + 1) === sM;
+                });
+
+                if (filteredMonthlyBills.length === 0) {
+                    showSnackbar("No bills found for the selected month.", true);
+                    return;
+                }
+
+                filteredMonthlyBills.sort((a, b) => new Date(a['Date']) - new Date(b['Date']));
+
+                let totalAmt = 0;
+                let totalWt = 0;
+                let tbodyHtml = '';
+
+                filteredMonthlyBills.forEach(item => {
+                    let d = new Date(item['Date']);
+                    let dateStr = !isNaN(d) ? d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) : item['Date'];
+                    let amt = parseFloat(item['Amount']) || 0;
+                    let wt = parseFloat(item['Weight (Kg)']) || 0;
+                    
+                    totalAmt += amt;
+                    totalWt += wt;
+
+                    tbodyHtml += `
+                        <tr class="border-b-2 border-black print:border-black">
+                            <td class="border-r-2 border-black p-2 text-xs font-bold">${dateStr}</td>
+                            <td class="border-r-2 border-black p-2 text-xs font-bold">${item['C-Note No'] || '-'}</td>
+                            <td class="border-r-2 border-black p-2 text-xs font-bold truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
+                            <td class="border-r-2 border-black p-2 text-xs font-bold text-right">${wt}</td>
+                            <td class="p-2 text-sm font-black text-right">₹${amt.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                document.getElementById('monthlyPrintPartyName').textContent = filteredMonthlyBills[0]['Party Name'] || '-';
+                
+                const dateObj = new Date(sY, sM - 1);
+                document.getElementById('monthlyPrintMonth').textContent = dateObj.toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
+                
+                document.getElementById('monthlyPrintTbody').innerHTML = tbodyHtml;
+                document.getElementById('monthlyPrintTotalWeight').textContent = totalWt.toFixed(2) + ' Kg';
+                document.getElementById('monthlyPrintTotalAmount').textContent = '₹' + totalAmt.toFixed(2);
+
+                monthModal.classList.add('hidden');
+
+                const printAreaMonthly = document.getElementById('printAreaMonthly');
+                printAreaMonthly.classList.remove('hidden');
+                printAreaMonthly.classList.add('print:block');
+                window.print();
+                printAreaMonthly.classList.add('hidden');
+                printAreaMonthly.classList.remove('print:block');
+            });
+
+            // Daily Bills Logic (Custom Date or Today)
             const refreshTodayBtn = document.getElementById('refreshTodayBtn');
             const todayResults = document.getElementById('todayResults');
             const todaySummary = document.getElementById('todaySummary');
@@ -908,16 +1240,20 @@ function doGet(e) {
             const refreshIcon = document.getElementById('refreshIcon');
 
             refreshTodayBtn.addEventListener('click', loadTodayBills);
+            dailyDateSelector.addEventListener('change', loadTodayBills);
 
             async function loadTodayBills() {
                 if (!APPS_SCRIPT_URL) return;
+
+                const selectedDateStr = dailyDateSelector.value;
+                if(!selectedDateStr) return; // Guard against empty date
 
                 refreshIcon.classList.add('animate-spin');
                 todayResults.innerHTML = '<div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white animate-pulse font-bold text-sm sm:text-base uppercase">Fetching...</div>';
                 todaySummary.classList.add('hidden');
 
                 try {
-                    const response = await fetch(`${APPS_SCRIPT_URL}?action=today`);
+                    const response = await fetch(`${APPS_SCRIPT_URL}?date=${encodeURIComponent(selectedDateStr)}`);
                     const text = await response.text();
                     
                     let data;
@@ -936,7 +1272,7 @@ function doGet(e) {
                         todayResults.innerHTML = `
                             <div class="text-center py-12 sm:py-16 border-2 border-dashed border-black rounded-xl bg-white">
                                 <span class="material-icons text-3xl sm:text-4xl mb-2 sm:mb-3 text-gray-400">receipt_long</span>
-                                <p class="font-bold text-sm sm:text-base uppercase tracking-wider text-gray-500">No bills generated today yet</p>
+                                <p class="font-bold text-sm sm:text-base uppercase tracking-wider text-gray-500">No bills generated on this date</p>
                             </div>`;
                     } else {
                         let totalAmount = 0;
