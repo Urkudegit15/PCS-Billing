@@ -13,10 +13,10 @@
     <title>PCS Billing | Courier System</title>
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Space Grotesk -->
+    <!-- Google Fonts: Space Grotesk and Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700;900&display=swap" rel="stylesheet">
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     
@@ -26,6 +26,7 @@
                 extend: {
                     fontFamily: {
                         sans: ['"Space Grotesk"', 'sans-serif'],
+                        print: ['"Montserrat"', 'sans-serif'],
                     },
                     colors: {
                         neo: {
@@ -514,150 +515,126 @@ function doGet(e) {
     <div id="snackbar" class="print:hidden">Data saved successfully!</div>
 
     <!-- PRINT INVOICE TEMPLATE - SINGLE (Hidden from screen, visible on print) -->
-    <div id="printArea" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
+    <div id="printArea" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print">
         
-        <!-- Header Section -->
-        <div class="flex justify-between items-start border-b-4 border-black pb-4 sm:pb-6 mb-6">
-            <div>
-                <h1 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-[#4F46E5] print:text-black">PCS Billing</h1>
-                <p class="font-bold text-base sm:text-lg bg-black text-white inline-block px-2 py-0.5 mt-1 uppercase tracking-widest">Courier & Cargo</p>
-                <p class="text-xs sm:text-sm font-bold mt-4 max-w-md uppercase">
-                    Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001
-                </p>
-            </div>
-            <div class="text-right border-2 border-black p-3 sm:p-4 bg-[#FFDE59] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:bg-white print:border-4">
-                <p class="text-sm sm:text-base font-bold uppercase tracking-wider mb-1"><strong>Phone:</strong> 6265865576</p>
-                <p class="text-sm sm:text-base font-bold uppercase tracking-wider"><strong>PAN:</strong> AAGPU0025P</p>
-            </div>
-        </div>
-
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-black uppercase bg-[#f4f4f0] border-2 border-black inline-block px-6 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4 print:bg-white">Invoice / Bill</h2>
+        <!-- Simple Standard Header -->
+        <div class="text-center mb-6 border-b border-gray-400 pb-4">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Invoice / Bill</h1>
+            <p class="text-base mt-2 font-semibold uppercase">Prabhakar Urkude</p>
+            <p class="text-sm text-gray-800 mt-1">Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001</p>
+            <p class="text-sm text-gray-800 mt-1"><strong>Phone:</strong> 6265865576 | <strong>PAN:</strong> AAGPU0025P</p>
         </div>
 
         <!-- Billed To -->
-        <div class="flex justify-between border-2 border-black p-4 sm:p-5 mb-8 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4">
+        <div class="flex justify-between mb-6 text-sm">
             <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billed To Party</p>
-                <p class="text-xl sm:text-2xl font-black uppercase mt-1" id="printPartyName">-</p>
+                <p class="text-gray-600 mb-1">Billed To Party:</p>
+                <p class="font-bold text-lg uppercase" id="printPartyName">-</p>
             </div>
             <div class="text-right">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Bill Date</p>
-                <p class="text-lg sm:text-xl font-bold mt-1" id="printDate">-</p>
+                <p class="text-gray-600 mb-1">Invoice Date:</p>
+                <p class="font-bold text-base" id="printDate">-</p>
             </div>
         </div>
 
         <!-- Details Table -->
-        <table class="w-full border-collapse border-4 border-black mb-10 text-left">
+        <table class="w-full border-collapse border border-black mb-10 text-sm">
             <thead>
-                <tr class="bg-gray-100 border-b-4 border-black print:bg-white">
-                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-xs sm:text-sm">C-Note No.</th>
-                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-xs sm:text-sm">Destination</th>
-                    <th class="border-r-2 border-black p-3 sm:p-4 font-bold uppercase tracking-wider text-right text-xs sm:text-sm">Weight</th>
-                    <th class="p-3 sm:p-4 font-black uppercase tracking-wider text-right text-sm sm:text-lg">Amount</th>
+                <tr class="bg-gray-100">
+                    <th class="border border-black p-2 text-left font-semibold uppercase">C-Note No.</th>
+                    <th class="border border-black p-2 text-left font-semibold uppercase">Destination</th>
+                    <th class="border border-black p-2 text-right font-semibold uppercase">Weight (Kg)</th>
+                    <th class="border border-black p-2 text-right font-semibold uppercase">Amount (₹)</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
-                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg" id="printCNote">-</td>
-                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg uppercase" id="printDest">-</td>
-                    <td class="border-r-2 border-black p-3 sm:p-4 font-bold text-base sm:text-lg text-right"><span id="printWeight">-</span> Kg</td>
-                    <td class="p-3 sm:p-4 font-black text-xl sm:text-2xl text-right" id="printAmount">-</td>
+                    <td class="border border-black p-2" id="printCNote">-</td>
+                    <td class="border border-black p-2 uppercase" id="printDest">-</td>
+                    <td class="border border-black p-2 text-right" id="printWeight">-</td>
+                    <td class="border border-black p-2 text-right font-semibold" id="printAmount">-</td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Footer / Bank Details -->
-        <div class="flex flex-col sm:flex-row justify-between items-end mt-4">
-            <div class="border-2 border-black p-4 sm:p-5 bg-[#f4f4f0] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full sm:w-2/3 mb-8 sm:mb-0 print:shadow-none print:border-4 print:bg-white">
-                <p class="text-xs sm:text-sm font-black uppercase tracking-widest border-b-2 border-black pb-2 mb-3">Bank Details for Payment</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-xs sm:text-sm">
-                    <p><strong>Banking Name:</strong><br><span class="font-bold uppercase text-sm sm:text-base">Prabhakar Urkude</span></p>
-                    <p><strong>Bank:</strong><br><span class="font-bold uppercase text-sm sm:text-base">UNION BANK OF INDIA</span></p>
-                    <p><strong>A/C No:</strong><br><span class="font-mono text-base sm:text-lg font-bold bg-[#FFDE59] px-1 print:bg-transparent">520291019763005</span></p>
-                    <p><strong>IFSC:</strong><br><span class="font-mono text-base sm:text-lg font-bold">UBIN0901571</span></p>
-                </div>
+        <div class="flex justify-between text-sm mt-8">
+            <div class="border border-black p-4 w-1/2">
+                <p class="font-bold border-b border-gray-300 pb-1 mb-2 uppercase">Bank Details for Payment</p>
+                <p class="mt-1"><strong>Name:</strong> Prabhakar Urkude</p>
+                <p class="mt-1"><strong>Bank:</strong> UNION BANK OF INDIA</p>
+                <p class="mt-1"><strong>A/C No:</strong> 520291019763005</p>
+                <p class="mt-1"><strong>IFSC:</strong> UBIN0901571</p>
             </div>
             
-            <div class="text-center w-full sm:w-1/3">
-                <div class="border-b-2 border-black mb-2 h-16 w-3/4 mx-auto sm:ml-auto sm:mr-0"></div>
-                <p class="font-bold text-xs sm:text-sm uppercase tracking-wider">Authorized Signatory</p>
+            <div class="w-1/3 text-center flex flex-col justify-end">
+                <div class="border-t border-black pt-2 w-3/4 mx-auto">
+                    <p class="font-semibold text-xs uppercase">Authorized Signatory</p>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- PRINT INVOICE TEMPLATE - MONTHLY (Hidden from screen, visible on print) -->
-    <div id="printAreaMonthly" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-sans">
+    <div id="printAreaMonthly" class="hidden w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print">
         
-        <!-- Header Section -->
-        <div class="flex justify-between items-start border-b-4 border-black pb-4 sm:pb-6 mb-6">
-            <div>
-                <h1 class="text-4xl sm:text-5xl font-black uppercase tracking-tighter text-[#4F46E5] print:text-black">PCS Billing</h1>
-                <p class="font-bold text-base sm:text-lg bg-black text-white inline-block px-2 py-0.5 mt-1 uppercase tracking-widest">Courier & Cargo</p>
-                <p class="text-xs sm:text-sm font-bold mt-4 max-w-md uppercase">
-                    Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001
-                </p>
-            </div>
-            <div class="text-right border-2 border-black p-3 sm:p-4 bg-[#FFDE59] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:bg-white print:border-4">
-                <p class="text-sm sm:text-base font-bold uppercase tracking-wider mb-1"><strong>Phone:</strong> 6265865576</p>
-                <p class="text-sm sm:text-base font-bold uppercase tracking-wider"><strong>PAN:</strong> AAGPU0025P</p>
-            </div>
-        </div>
-
-        <div class="text-center mb-6">
-            <h2 class="text-2xl font-black uppercase bg-[#f4f4f0] border-2 border-black inline-block px-6 py-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4 print:bg-white">Monthly Statement</h2>
+        <!-- Simple Standard Header -->
+        <div class="text-center mb-6 border-b border-gray-400 pb-4">
+            <h1 class="text-2xl font-bold uppercase tracking-wide">Monthly Statement</h1>
+            <p class="text-base mt-2 font-semibold uppercase">Prabhakar Urkude</p>
+            <p class="text-sm text-gray-800 mt-1">Agarsen Chowk Deshbadhu Press Main Road Sona Towr, Raipur (C.G.) 492001</p>
+            <p class="text-sm text-gray-800 mt-1"><strong>Phone:</strong> 6265865576 | <strong>PAN:</strong> AAGPU0025P</p>
         </div>
 
         <!-- Billed To -->
-        <div class="flex justify-between border-2 border-black p-4 sm:p-5 mb-8 bg-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] print:shadow-none print:border-4">
+        <div class="flex justify-between mb-6 text-sm">
             <div>
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billed To Party</p>
-                <p class="text-xl sm:text-2xl font-black uppercase mt-1" id="monthlyPrintPartyName">-</p>
+                <p class="text-gray-600 mb-1">Billed To Party:</p>
+                <p class="font-bold text-lg uppercase" id="monthlyPrintPartyName">-</p>
             </div>
             <div class="text-right">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest">Billing Month</p>
-                <p class="text-lg sm:text-xl font-bold mt-1" id="monthlyPrintMonth">-</p>
+                <p class="text-gray-600 mb-1">Billing Month:</p>
+                <p class="font-bold text-base" id="monthlyPrintMonth">-</p>
             </div>
         </div>
 
         <!-- Details Table -->
-        <table class="w-full border-collapse border-4 border-black mb-10 text-left">
+        <table class="w-full border-collapse border border-black mb-10 text-sm">
             <thead>
-                <tr class="bg-gray-100 border-b-4 border-black print:bg-white">
-                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">Date</th>
-                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">C-Note</th>
-                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-xs">Destination</th>
-                    <th class="border-r-2 border-black p-2 font-bold uppercase tracking-wider text-right text-xs">Weight</th>
-                    <th class="p-2 font-black uppercase tracking-wider text-right text-sm">Amount</th>
+                <tr class="bg-gray-100">
+                    <th class="border border-black p-2 text-left font-semibold uppercase">Date</th>
+                    <th class="border border-black p-2 text-left font-semibold uppercase">C-Note No.</th>
+                    <th class="border border-black p-2 text-left font-semibold uppercase">Destination</th>
+                    <th class="border border-black p-2 text-right font-semibold uppercase">Weight (Kg)</th>
+                    <th class="border border-black p-2 text-right font-semibold uppercase">Amount (₹)</th>
                 </tr>
             </thead>
             <tbody id="monthlyPrintTbody">
                 <!-- dynamic rows -->
             </tbody>
             <tfoot>
-                <tr class="border-t-4 border-black bg-gray-100 print:bg-white">
-                    <td colspan="3" class="border-r-2 border-black p-3 font-black text-right uppercase tracking-wider text-sm">Grand Total</td>
-                    <td class="border-r-2 border-black p-3 font-black text-right text-lg" id="monthlyPrintTotalWeight">-</td>
-                    <td class="p-3 font-black text-xl text-right" id="monthlyPrintTotalAmount">-</td>
+                <tr class="bg-gray-100 font-semibold">
+                    <td colspan="3" class="border border-black p-2 text-right uppercase tracking-wider">Grand Total</td>
+                    <td class="border border-black p-2 text-right font-bold" id="monthlyPrintTotalWeight">-</td>
+                    <td class="border border-black p-2 text-right font-bold" id="monthlyPrintTotalAmount">-</td>
                 </tr>
             </tfoot>
         </table>
 
         <!-- Footer / Bank Details -->
-        <div class="flex flex-col sm:flex-row justify-between items-end mt-4">
-            <div class="border-2 border-black p-4 sm:p-5 bg-[#f4f4f0] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] w-full sm:w-2/3 mb-8 sm:mb-0 print:shadow-none print:border-4 print:bg-white">
-                <p class="text-xs sm:text-sm font-black uppercase tracking-widest border-b-2 border-black pb-2 mb-3">Bank Details for Payment</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4 text-xs sm:text-sm">
-                    <p><strong>Banking Name:</strong><br><span class="font-bold uppercase text-sm sm:text-base">Prabhakar Urkude</span></p>
-                    <p><strong>Bank:</strong><br><span class="font-bold uppercase text-sm sm:text-base">UNION BANK OF INDIA</span></p>
-                    <p><strong>A/C No:</strong><br><span class="font-mono text-base sm:text-lg font-bold bg-[#FFDE59] px-1 print:bg-transparent">520291019763005</span></p>
-                    <p><strong>IFSC:</strong><br><span class="font-mono text-base sm:text-lg font-bold">UBIN0901571</span></p>
-                </div>
+        <div class="flex justify-between text-sm mt-8">
+            <div class="border border-black p-4 w-1/2">
+                <p class="font-bold border-b border-gray-300 pb-1 mb-2 uppercase">Bank Details for Payment</p>
+                <p class="mt-1"><strong>Name:</strong> Prabhakar Urkude</p>
+                <p class="mt-1"><strong>Bank:</strong> UNION BANK OF INDIA</p>
+                <p class="mt-1"><strong>A/C No:</strong> 520291019763005</p>
+                <p class="mt-1"><strong>IFSC:</strong> UBIN0901571</p>
             </div>
             
-            <div class="text-center w-full sm:w-1/3">
-                <div class="border-b-2 border-black mb-2 h-16 w-3/4 mx-auto sm:ml-auto sm:mr-0"></div>
-                <p class="font-bold text-xs sm:text-sm uppercase tracking-wider">Authorized Signatory</p>
+            <div class="w-1/3 text-center flex flex-col justify-end">
+                <div class="border-t border-black pt-2 w-3/4 mx-auto">
+                    <p class="font-semibold text-xs uppercase">Authorized Signatory</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1203,12 +1180,12 @@ function doGet(e) {
                     totalWt += wt;
 
                     tbodyHtml += `
-                        <tr class="border-b-2 border-black print:border-black">
-                            <td class="border-r-2 border-black p-2 text-xs font-bold">${dateStr}</td>
-                            <td class="border-r-2 border-black p-2 text-xs font-bold">${item['C-Note No'] || '-'}</td>
-                            <td class="border-r-2 border-black p-2 text-xs font-bold truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
-                            <td class="border-r-2 border-black p-2 text-xs font-bold text-right">${wt}</td>
-                            <td class="p-2 text-sm font-black text-right">₹${amt.toFixed(2)}</td>
+                        <tr>
+                            <td class="border border-black p-2 text-sm">${dateStr}</td>
+                            <td class="border border-black p-2 text-sm">${item['C-Note No'] || '-'}</td>
+                            <td class="border border-black p-2 text-sm truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
+                            <td class="border border-black p-2 text-sm text-right">${wt}</td>
+                            <td class="border border-black p-2 text-sm text-right">₹${amt.toFixed(2)}</td>
                         </tr>
                     `;
                 });
@@ -1219,7 +1196,7 @@ function doGet(e) {
                 document.getElementById('monthlyPrintMonth').textContent = dateObj.toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
                 
                 document.getElementById('monthlyPrintTbody').innerHTML = tbodyHtml;
-                document.getElementById('monthlyPrintTotalWeight').textContent = totalWt.toFixed(2) + ' Kg';
+                document.getElementById('monthlyPrintTotalWeight').textContent = totalWt.toFixed(2);
                 document.getElementById('monthlyPrintTotalAmount').textContent = '₹' + totalAmt.toFixed(2);
 
                 monthModal.classList.add('hidden');
