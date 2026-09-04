@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#4F46E5">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,8 +16,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Image Generation Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Image Generation Library (Optimized: Removed html2pdf) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
     <!-- Google Fonts: Roboto and Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,7 +28,7 @@
     
     <script>
         tailwind.config = {
-            darkMode: 'class', // Enable class-based dark mode
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -38,7 +39,6 @@
                         primary: '#4F46E5', /* Indigo 600 */
                         'primary-dark': '#4338CA', /* Indigo 700 */
                         'primary-light': '#EEF2FF', /* Indigo 50 */
-                        
                         /* Dark Mode specifics */
                         'dark-bg': '#0F172A',
                         'dark-card': '#1E293B',
@@ -115,7 +115,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 9999px; /* Pill shape */
+            border-radius: 9999px;
             font-weight: 600;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
@@ -123,9 +123,7 @@
             letter-spacing: 0.025em;
         }
 
-        .md-btn:active {
-            transform: scale(0.97);
-        }
+        .md-btn:active { transform: scale(0.97); }
 
         .md-btn-primary {
             background-color: #4F46E5;
@@ -175,8 +173,6 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
-        
-        /* Dark Mode Scrollbar */
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #64748B; }
 
@@ -190,6 +186,7 @@
         }
     </style>
 </head>
+
 <body class="font-sans antialiased bg-slate-50 text-slate-800 dark:bg-dark-bg dark:text-slate-100">
 
     <!-- Slide-out Navigation Drawer -->
@@ -216,7 +213,6 @@
             
             <div class="border-t border-slate-100 dark:border-dark-border my-3 mx-2"></div>
             
-            <!-- PWA Install Button -->
             <button id="installAppBtn" class="px-4 py-3.5 rounded-xl text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors text-left flex items-center hidden">
                 <span class="material-icons mr-4 text-[22px]">download</span> Install App
             </button>
@@ -225,7 +221,7 @@
 
     <!-- App Bar -->
     <header class="print:hidden bg-white/90 dark:bg-dark-bg/90 backdrop-blur-md border-b border-slate-200 dark:border-dark-border shadow-sm w-full fixed top-0 z-50 transition-colors">
-        <div class="w-full px-4 sm:px-6 lg:px-8">
+        <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <div class="flex items-center gap-3 sm:gap-4 overflow-hidden">
                     <button id="hamburgerBtn" class="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center flex-shrink-0">
@@ -252,11 +248,11 @@
     </header>
 
     <!-- Main Content -->
-    <main class="print:hidden pt-24 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 w-full">
+    <main class="print:hidden pt-24 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         
         <!-- Form Section -->
         <div id="entrySection">
-            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
+            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight" id="entryTitle">New Bill Entry</h2>
                     <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base" id="entrySubtitle">Fill in the details below to generate a new record.</p>
@@ -267,7 +263,7 @@
                 </div>
             </div>
 
-            <div class="md-card overflow-hidden bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto transition-colors" id="entryCard">
+            <div class="md-card overflow-hidden bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border transition-colors" id="entryCard">
                 <form id="billingForm" class="p-5 sm:p-8">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-6">
                         <div class="flex flex-col gap-1.5 sm:gap-2">
@@ -316,14 +312,14 @@
 
         <!-- Search Section -->
         <div id="searchSection" class="hidden">
-            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
+            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Search Records</h2>
                     <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">Look up previous bills to generate monthly statements.</p>
                 </div>
             </div>
             
-            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto">
+            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border">
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 items-stretch sm:items-end">
                     <div class="flex flex-col gap-1.5 sm:gap-2 flex-grow w-full">
                         <label for="recordSearchInput" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Enter Party Name or C-Note No.</label>
@@ -355,7 +351,7 @@
 
         <!-- Daily Bills Section -->
         <div id="todaySection" class="hidden">
-            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
+            <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Daily Bills</h2>
                     <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
@@ -368,7 +364,7 @@
                 </div>
             </div>
             
-            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto">
+            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border">
                 <div id="todayResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
                     <div class="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
                         <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">receipt_long</span>
@@ -670,7 +666,6 @@ function doGet(e) {
             const themeToggleBtn = document.getElementById('themeToggleBtn');
             const themeIcon = document.getElementById('themeIcon');
             
-            // Check local storage or system preference
             if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
                 themeIcon.textContent = 'light_mode';
@@ -742,8 +737,6 @@ function doGet(e) {
             async function shareImage(elementId, filename) {
                 showSnackbar("Preparing Image for WhatsApp...", false);
                 
-                // CRITICAL FIX: Save scroll position and instantly scroll to top 
-                // to prevent blank image generation on mobile devices.
                 const prevScrollY = window.scrollY;
                 window.scrollTo(0, 0);
 
@@ -751,34 +744,27 @@ function doGet(e) {
                 const clone = originalElement.cloneNode(true);
                 clone.id = ""; 
                 
-                // Ensure the clone is visible to html2canvas but hidden from the user
-                // Using explicit white background and black text to override dark mode for the snapshot
+                // Force visible specifically for html2canvas
                 clone.style.cssText = 'display: block !important; position: absolute; top: 0; left: 0; width: 800px; background-color: white !important; color: black !important; z-index: -1000; overflow: visible;';
-                clone.classList.remove('dark'); // Strip dark mode if applied
+                clone.classList.remove('dark'); 
                 
                 document.body.appendChild(clone);
 
                 try {
-                    // Give the browser a tiny moment to calculate layout for the clone
                     await new Promise(resolve => setTimeout(resolve, 100));
 
                     const canvas = await html2canvas(clone, {
-                        scale: 2, // High quality
+                        scale: 2, 
                         useCORS: true,
                         logging: false,
                         scrollY: 0, 
                         windowWidth: 800,
-                        backgroundColor: "#ffffff" // Force white background
+                        backgroundColor: "#ffffff" 
                     });
 
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], filename, { type: 'image/jpeg', lastModified: new Date().getTime() });
 
-                        // Clean up and immediately restore user's scroll position
-                        document.body.removeChild(clone);
-                        window.scrollTo(0, prevScrollY);
-
-                        // Share Native
                         if (navigator.canShare && navigator.canShare({ files: [file] })) {
                             await navigator.share({
                                 title: 'Invoice',
@@ -786,7 +772,6 @@ function doGet(e) {
                             });
                             showSnackbar("Shared successfully!");
                         } else {
-                            // Safe fallback download for browsers that don't support native sharing
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.style.display = 'none';
@@ -802,9 +787,10 @@ function doGet(e) {
                     }, 'image/jpeg', 0.98);
                 } catch (err) {
                     console.error('Image Share Error:', err);
+                    showSnackbar("Error generating image.", true);
+                } finally {
                     if(document.body.contains(clone)) document.body.removeChild(clone);
                     window.scrollTo(0, prevScrollY);
-                    showSnackbar("Error generating image.", true);
                 }
             }
             // --- END WhatsApp Image Generation ---
@@ -913,7 +899,6 @@ function doGet(e) {
                     const item = queue[0];
                     const formData = new FormData();
                     
-                    // Convert JSON back to FormData for Google Apps Script
                     for (const key in item) {
                         if (key !== '_id' && item[key] !== null && item[key] !== undefined) {
                             formData.append(key, item[key]);
@@ -922,31 +907,26 @@ function doGet(e) {
 
                     try {
                         await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' });
-                        // Success! Remove from local queue
                         queue.shift();
                         localStorage.setItem('pcs_sync_queue', JSON.stringify(queue));
-                        loadPartyNames(); // Refresh party names autocomplete in background
+                        loadPartyNames(); 
                     } catch (err) {
-                        console.error("Background sync failed, will retry later.", err);
-                        break; // Stop processing on first network error, try again later
+                        break; // Stop processing on network error
                     }
                 }
                 
                 isSyncing = false;
             }
 
-            // Auto-sync when internet reconnects or on page load
             window.addEventListener('online', processSyncQueue);
             processSyncQueue();
             // --- END BACKGROUND SYNC LOGIC ---
-
 
             resetBtn.addEventListener('click', () => { resetFormUI(); });
 
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
-                // Instantly collect data
                 const billData = {
                     'Date': document.getElementById('date').value,
                     'C-Note No': document.getElementById('cnote').value,
@@ -961,10 +941,7 @@ function doGet(e) {
                     billData.rowIndex = editingRowIndex;
                 }
 
-                // Send to background queue instead of awaiting network
                 saveToSyncQueue(billData);
-                
-                // Instantly reset UI
                 resetFormUI();
             });
 
@@ -1045,46 +1022,41 @@ function doGet(e) {
                 });
             });
 
-            // Card Generation: Material Look with Dark Mode support
+            // Card Generation: Material Look with Dark Mode support (Compact)
             function generateResultCard(item, dateStr, amount, isSearchTab = false) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
                 const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Wt';
                 
                 return `
-                <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all mb-4 mx-0.5 sm:mx-1">
+                <div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all mb-3 mx-0.5">
                     <div class="flex justify-between items-start gap-3">
-                        <div class="overflow-hidden flex-1 w-full">
-                            <div class="font-bold text-lg text-slate-900 dark:text-white mb-2 truncate" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
-                            <div class="flex flex-wrap gap-2 text-slate-600 dark:text-slate-400">
-                                <span class="flex items-center text-xs font-semibold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
-                                <span class="flex items-center text-xs font-semibold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                        <div class="overflow-hidden flex-1">
+                            <div class="font-bold text-lg sm:text-xl text-slate-900 dark:text-white mb-2 leading-tight break-words">${item['Party Name'] || '-'}</div>
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
+                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                                <span class="flex items-center break-words" title="${item['Destination'] || '-'}"><span class="material-icons text-[14px] mr-1">place</span>${item['Destination'] || '-'}</span>
                             </div>
                         </div>
                         <div class="text-right shrink-0 flex flex-col items-end">
-                            <div class="font-bold text-xl sm:text-2xl text-primary dark:text-indigo-400 leading-none mb-1.5">₹${amount.toFixed(2)}</div>
-                            <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded inline-block border border-slate-100 dark:border-slate-700">${weightDisplay}</div>
+                            <div class="font-bold text-xl sm:text-2xl text-primary dark:text-indigo-400 leading-none">₹${amount.toFixed(2)}</div>
+                            <div class="text-[10px] sm:text-xs font-semibold text-slate-400 dark:text-slate-500 mt-2 bg-slate-50 dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-100 dark:border-slate-700">${weightDisplay}</div>
                         </div>
                     </div>
 
-                    <div class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2 sm:p-3 rounded-lg border border-slate-100 dark:border-slate-700 uppercase truncate mt-4" title="${item['Destination'] || '-'}">
-                        <span class="material-icons text-[18px] inline-block align-middle mr-1 text-slate-400 dark:text-slate-500">place</span> ${item['Destination'] || '-'}
-                    </div>
-
                     ${!isSearchTab ? `
-                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
-                        <button class="edit-bill-btn text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-primary dark:hover:text-indigo-400 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
-                            <span class="material-icons text-[18px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 dark:border-slate-700 pt-3 mt-3">
+                        <button class="edit-bill-btn text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-primary dark:hover:text-indigo-400 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
+                            <span class="material-icons text-[16px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
                         </button>
-                        <button class="delete-bill-btn text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
-                            <span class="material-icons text-[18px]">delete</span> <span class="ml-1 sm:hidden">Delete</span>
+                        <button class="delete-bill-btn text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
+                            <span class="material-icons text-[16px]">delete</span> <span class="ml-1 sm:hidden">Del</span>
                         </button>
-                        
-                        <button class="share-bill-btn text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
-                            <span class="material-icons text-[18px] mr-1">share</span> WA
+                        <button class="share-bill-btn text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
+                            <span class="material-icons text-[16px] mr-1">share</span> WA
                         </button>
-
-                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
-                            <span class="material-icons text-[18px] mr-1.5">print</span> Print
+                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-lg px-3 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
+                            <span class="material-icons text-[16px] mr-1.5">print</span> Print
                         </button>
                     </div>
                     ` : ''}
@@ -1139,7 +1111,6 @@ function doGet(e) {
                         const card = deleteBtn.closest('.bg-white, .dark\\:bg-slate-800');
                         if (card) card.remove();
                         
-                        // Send delete to background queue
                         saveToSyncQueue({ action: 'delete', rowIndex: itemData.rowIndex });
                     }
                 }
@@ -1162,7 +1133,7 @@ function doGet(e) {
                     navEntryText.textContent = "Edit Bill";
                     
                     submitBtn.classList.remove('md-btn-primary');
-                    submitBtn.classList.add('bg-primary-dark'); // Darker to indicate edit
+                    submitBtn.classList.add('bg-primary-dark'); 
                     submitText.textContent = "Update Bill";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1215,7 +1186,7 @@ function doGet(e) {
                         searchResults.innerHTML = `
                             <div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
                                 <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">search_off</span>
-                                <p class="text-sm font-medium text-slate-500">No bills found for "${query}"</p>
+                                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No bills found for "${query}"</p>
                             </div>`;
                     } else {
                         currentSearchData = data.reverse();
@@ -1267,7 +1238,7 @@ function doGet(e) {
             const confirmMonthBtn = document.getElementById('confirmMonthBtn');
             const shareMonthBtn = document.getElementById('shareMonthBtn');
             const monthSelector = document.getElementById('monthSelector');
-            
+
             generateMonthlyBillBtn.addEventListener('click', () => {
                 monthModal.classList.remove('hidden');
                 const now = new Date();
@@ -1370,7 +1341,6 @@ function doGet(e) {
                 if (prepareMonthlyBillData()) {
                     monthModal.classList.add('hidden');
                     const [selYear, selMonth] = monthSelector.value.split('-');
-                    // Exclusively trigger the image share function to prevent blank mobile errors
                     shareImage('printAreaMonthly', `Monthly_Statement_${selMonth}_${selYear}.jpg`);
                 }
             });
@@ -1414,7 +1384,7 @@ function doGet(e) {
                         todayResults.innerHTML = `
                             <div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
                                 <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">receipt_long</span>
-                                <p class="text-sm font-medium text-slate-500">No bills generated on this date</p>
+                                <p class="text-sm font-medium text-slate-500 dark:text-slate-400">No bills generated on this date</p>
                             </div>`;
                     } else {
                         let totalAmount = 0;
