@@ -17,7 +17,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Image Generation Library (Optimized: Removed html2pdf) -->
+    <!-- Image Generation Library (Optimized: Removed html2pdf, using only Image for WA) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
     <!-- Google Fonts: Roboto and Montserrat -->
@@ -49,13 +49,14 @@
             }
         }
     </script>
+    
     <style>
         body {
             -webkit-tap-highlight-color: transparent;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Default Screen View */
+        /* Default Screen View for Print Areas */
         #printArea, #printAreaMonthly {
             display: none;
         }
@@ -71,7 +72,7 @@
                 print-color-adjust: exact !important;
             }
             
-            body > header, body > main, #drawerOverlay, #navDrawer, #setupModal, #monthModal, #snackbar {
+            body > header, body > main, #drawerOverlay, #navDrawer, #setupModal, #monthModal, #deleteModal, #snackbar {
                 display: none !important;
             }
 
@@ -172,7 +173,6 @@
             color: #FFFFFF;
         }
 
-        /* Snackbar */
         #snackbar {
             visibility: hidden;
             min-width: 250px;
@@ -227,7 +227,6 @@
 
 <body class="font-sans antialiased bg-slate-100 text-slate-800 dark:bg-dark-bg dark:text-slate-100">
 
-    <!-- Slide-out Navigation Drawer -->
     <div id="drawerOverlay" class="print:hidden fixed inset-0 bg-slate-900/60 z-[90] hidden transition-opacity duration-300 opacity-0"></div>
     <div id="navDrawer" class="print:hidden fixed top-0 left-0 h-full w-72 sm:w-80 bg-white dark:bg-dark-card border-r-2 border-slate-300 dark:border-slate-700 z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
         <div class="h-20 border-b-2 border-slate-300 dark:border-slate-700 flex items-center justify-between px-6 shrink-0 bg-white dark:bg-dark-card">
@@ -257,7 +256,6 @@
         </div>
     </div>
 
-    <!-- App Bar -->
     <header class="print:hidden bg-white dark:bg-slate-900 border-b-2 border-slate-300 dark:border-slate-700 w-full fixed top-0 z-50 transition-colors">
         <div class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
@@ -285,10 +283,9 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Content Container -->
     <main class="print:hidden pt-24 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto">
         
-        <!-- Form Section -->
         <div id="entrySection">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
@@ -348,7 +345,6 @@
             </div>
         </div>
 
-        <!-- Search Section -->
         <div id="searchSection" class="hidden">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
@@ -378,7 +374,7 @@
                     </button>
                 </div>
                 
-                <div id="searchResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
+                <div id="searchResults" class="max-h-[500px] overflow-y-auto pr-1 sm:pr-2">
                     <div class="text-center py-16 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                         <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-400 dark:text-slate-500">search</span>
                         <p class="font-bold text-sm sm:text-base text-slate-500 dark:text-slate-400 uppercase tracking-wider">Enter a query to find bills</p>
@@ -387,7 +383,6 @@
             </div>
         </div>
 
-        <!-- Daily Bills Section -->
         <div id="todaySection" class="hidden">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                 <div>
@@ -403,7 +398,7 @@
             </div>
             
             <div class="flat-card p-5 sm:p-8">
-                <div id="todayResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
+                <div id="todayResults" class="max-h-[500px] overflow-y-auto pr-1 sm:pr-2">
                     <div class="text-center py-16 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                         <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-400 dark:text-slate-500">receipt_long</span>
                         <p class="font-bold text-sm sm:text-base text-slate-500 dark:text-slate-400 uppercase tracking-wider">Click refresh to load bills</p>
@@ -416,7 +411,6 @@
             </div>
         </div>
 
-        <!-- Setup Instructions Modal -->
         <div id="setupModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
             <div class="flat-card max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-dark-card">
                 <div class="px-6 py-4 border-b-2 border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 flex-shrink-0">
@@ -563,6 +557,23 @@ function doGet(e) {
             </div>
         </div>
 
+        <!-- Custom Delete Confirmation Modal (Replaces browser confirm() prompt) -->
+        <div id="deleteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-[120] flex items-center justify-center p-4 transition-opacity">
+            <div class="flat-card max-w-sm w-full p-6 sm:p-8 flex flex-col bg-white dark:bg-dark-card">
+                <h3 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mb-3 flex items-center uppercase tracking-wider">
+                    <span class="material-icons mr-2 text-red-500 text-3xl">warning</span> Delete Bill
+                </h3>
+                <p class="text-sm font-bold text-slate-600 dark:text-slate-400 mb-8 leading-relaxed" id="deleteModalText">Are you sure you want to delete this bill?</p>
+                
+                <div class="flex flex-col sm:flex-row justify-end gap-3 mt-auto">
+                    <button id="cancelDeleteBtn" class="flat-btn flat-btn-tonal px-4 py-3.5 text-sm w-full sm:w-1/2">Cancel</button>
+                    <button id="confirmDeleteBtn" class="flat-btn bg-red-500 text-white hover:bg-red-600 px-4 py-3.5 text-sm flex items-center justify-center w-full sm:w-1/2">
+                        <span class="material-icons mr-2 text-[20px]">delete</span> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Snackbar for Notifications -->
@@ -700,11 +711,17 @@ function doGet(e) {
 
         document.addEventListener('DOMContentLoaded', () => {
 
+            // --- Safe Storage Wrapper to prevent iframe sandbox crashes ---
+            const safeStorage = {
+                get: (key) => { try { return localStorage.getItem(key); } catch(e) { return null; } },
+                set: (key, val) => { try { localStorage.setItem(key, val); } catch(e) {} }
+            };
+
             // --- Theme Toggle Logic ---
             const themeToggleBtn = document.getElementById('themeToggleBtn');
             const themeIcon = document.getElementById('themeIcon');
             
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            if (safeStorage.get('theme') === 'dark' || (!safeStorage.get('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
                 themeIcon.textContent = 'light_mode';
             } else {
@@ -715,10 +732,10 @@ function doGet(e) {
             themeToggleBtn.addEventListener('click', () => {
                 document.documentElement.classList.toggle('dark');
                 if (document.documentElement.classList.contains('dark')) {
-                    localStorage.setItem('theme', 'dark');
+                    safeStorage.set('theme', 'dark');
                     themeIcon.textContent = 'light_mode';
                 } else {
-                    localStorage.setItem('theme', 'light');
+                    safeStorage.set('theme', 'light');
                     themeIcon.textContent = 'dark_mode';
                 }
             });
@@ -748,9 +765,11 @@ function doGet(e) {
 
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js').catch(err => {
-                        console.log('SW setup requires sw.js in GitHub.');
-                    });
+                    try {
+                        navigator.serviceWorker.register('./sw.js').catch(err => {
+                            console.log('SW setup requires sw.js in GitHub.');
+                        });
+                    } catch(e) {}
                 });
             }
 
@@ -782,7 +801,6 @@ function doGet(e) {
                 const clone = originalElement.cloneNode(true);
                 clone.id = ""; 
                 
-                // Force visible specifically for html2canvas
                 clone.style.cssText = 'display: block !important; position: absolute; top: 0; left: 0; width: 800px; background-color: white !important; color: black !important; z-index: -1000; overflow: visible;';
                 clone.classList.remove('dark'); 
                 
@@ -803,17 +821,20 @@ function doGet(e) {
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], filename, { type: 'image/jpeg', lastModified: new Date().getTime() });
 
-                        // Clean up
                         document.body.removeChild(clone);
                         window.scrollTo(0, prevScrollY);
 
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            await navigator.share({
-                                title: 'Invoice',
-                                files: [file]
-                            });
-                            showSnackbar("Shared successfully!");
-                        } else {
+                        try {
+                            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    title: 'Invoice',
+                                    files: [file]
+                                });
+                                showSnackbar("Shared successfully!");
+                            } else {
+                                throw new Error("Share API not fully supported.");
+                            }
+                        } catch(shareErr) {
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.style.display = 'none';
@@ -920,9 +941,9 @@ function doGet(e) {
             let isSyncing = false;
 
             function saveToSyncQueue(data) {
-                let queue = JSON.parse(localStorage.getItem('pcs_sync_queue') || '[]');
+                let queue = JSON.parse(safeStorage.get('pcs_sync_queue') || '[]');
                 queue.push({ ...data, _id: Date.now() });
-                localStorage.setItem('pcs_sync_queue', JSON.stringify(queue));
+                safeStorage.set('pcs_sync_queue', JSON.stringify(queue));
                 
                 showSnackbar(data.action === 'delete' ? "Deleted locally! Syncing..." : "Saved locally! Syncing...", false);
                 processSyncQueue();
@@ -931,7 +952,7 @@ function doGet(e) {
             async function processSyncQueue() {
                 if (isSyncing || !navigator.onLine || !APPS_SCRIPT_URL) return;
                 
-                let queue = JSON.parse(localStorage.getItem('pcs_sync_queue') || '[]');
+                let queue = JSON.parse(safeStorage.get('pcs_sync_queue') || '[]');
                 if (queue.length === 0) return;
 
                 isSyncing = true;
@@ -949,10 +970,10 @@ function doGet(e) {
                     try {
                         await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' });
                         queue.shift();
-                        localStorage.setItem('pcs_sync_queue', JSON.stringify(queue));
+                        safeStorage.set('pcs_sync_queue', JSON.stringify(queue));
                         loadPartyNames(); 
                     } catch (err) {
-                        break; // Stop processing on network error
+                        break; 
                     }
                 }
                 
@@ -1063,47 +1084,46 @@ function doGet(e) {
                 });
             });
 
-            // Card Generation: Flat Look with Dark Mode support
+            // Professional Ledger List Style Generation
             function generateResultCard(item, dateStr, amount, isSearchTab = false) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
                 const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Wt';
                 
                 return `
-                <div class="flat-card p-4 sm:p-5 mb-4 mx-0.5 sm:mx-1">
-                    <div class="flex justify-between items-start gap-3">
-                        <div class="overflow-hidden flex-1 w-full">
-                            <div class="font-bold text-xl text-slate-900 dark:text-white mb-2 truncate" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
-                            <div class="flex flex-wrap gap-2 text-slate-600 dark:text-slate-300">
-                                <span class="flex items-center text-xs font-bold bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
-                                <span class="flex items-center text-xs font-bold bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                <div class="result-card-wrapper py-4 border-b-2 border-slate-100 dark:border-slate-700 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors px-2 rounded-lg">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                        
+                        <div class="flex-grow min-w-0 w-full sm:w-auto">
+                            <div class="flex justify-between items-start mb-1.5">
+                                <div class="font-black text-slate-900 dark:text-white text-base sm:text-lg truncate pr-3 uppercase" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
+                                <div class="font-black text-primary dark:text-indigo-400 text-lg sm:text-xl whitespace-nowrap">₹${amount.toFixed(2)}</div>
+                            </div>
+                            
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                                <span class="flex items-center"><span class="material-icons text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
+                                <span class="flex items-center"><span class="material-icons text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                                <span class="flex items-center truncate max-w-[200px]" title="${item['Destination'] || '-'}"><span class="material-icons text-[16px] mr-1">place</span>${item['Destination'] || '-'}</span>
+                                <span class="flex items-center text-slate-400 dark:text-slate-500"><span class="material-icons text-[16px] mr-1">scale</span>${weightDisplay}</span>
                             </div>
                         </div>
-                        <div class="text-right shrink-0 flex flex-col items-end">
-                            <div class="font-black text-2xl text-primary dark:text-indigo-400 leading-none mb-1.5">₹${amount.toFixed(2)}</div>
-                            <div class="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded inline-block border border-slate-200 dark:border-slate-600">${weightDisplay}</div>
+
+                        ${!isSearchTab ? `
+                        <div class="flex items-center gap-2 shrink-0 mt-3 sm:mt-0 w-full sm:w-auto pb-1 sm:pb-0">
+                            <button class="edit-bill-btn bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 p-2.5 rounded-lg transition-colors flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Edit">
+                                <span class="material-icons text-[20px]">edit</span>
+                            </button>
+                            <button class="delete-bill-btn bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/40 p-2.5 rounded-lg transition-colors flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Delete">
+                                <span class="material-icons text-[20px]">delete</span>
+                            </button>
+                            <button class="share-bill-btn bg-[#25D366]/20 text-[#128C7E] dark:text-[#25D366] hover:bg-[#25D366]/30 p-2.5 rounded-lg transition-colors flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Share via WhatsApp">
+                                <span class="material-icons text-[20px]">share</span>
+                            </button>
+                            <button class="print-bill-btn bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-black dark:hover:bg-white p-2.5 rounded-lg transition-colors flex items-center justify-center flex-1 sm:flex-none" data-item="${encodedItem}" title="Print">
+                                <span class="material-icons text-[20px]">print</span>
+                            </button>
                         </div>
+                        ` : ''}
                     </div>
-
-                    <div class="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-600 uppercase truncate mt-4" title="${item['Destination'] || '-'}">
-                        <span class="material-icons text-[18px] inline-block align-middle mr-1 text-slate-400 dark:text-slate-500">place</span> ${item['Destination'] || '-'}
-                    </div>
-
-                    ${!isSearchTab ? `
-                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t-2 border-slate-100 dark:border-slate-700 pt-4 mt-4">
-                        <button class="edit-bill-btn text-slate-800 dark:text-slate-200 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-lg px-3 py-3 text-xs font-bold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
-                            <span class="material-icons text-[18px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
-                        </button>
-                        <button class="delete-bill-btn text-white bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 rounded-lg px-3 py-3 text-xs font-bold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
-                            <span class="material-icons text-[18px]">delete</span> <span class="ml-1 sm:hidden">Del</span>
-                        </button>
-                        <button class="share-bill-btn text-white bg-[#25D366] hover:bg-green-600 rounded-lg px-3 py-3 text-xs font-bold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
-                            <span class="material-icons text-[18px] mr-1">share</span> WA
-                        </button>
-                        <button class="print-bill-btn bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-black dark:hover:bg-white rounded-lg px-4 py-3 text-xs font-bold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
-                            <span class="material-icons text-[18px] mr-1.5">print</span> Print
-                        </button>
-                    </div>
-                    ` : ''}
                 </div>
                 `;
             }
@@ -1128,6 +1148,9 @@ function doGet(e) {
                 document.getElementById('printAmount').textContent = '₹' + amount.toFixed(2);
             }
 
+            let pendingDeleteData = null;
+            let pendingDeleteCard = null;
+
             document.addEventListener('click', async (e) => {
                 
                 // SHARE SINGLE BILL AS IMAGE DIRECTLY
@@ -1147,16 +1170,14 @@ function doGet(e) {
                     window.print();
                 }
 
-                // DELETE BILL
+                // CUSTOM DELETE TRIGGER
                 const deleteBtn = e.target.closest('.delete-bill-btn');
                 if (deleteBtn) {
-                    const itemData = JSON.parse(decodeURIComponent(deleteBtn.getAttribute('data-item')));
-                    if(confirm(`Are you sure you want to delete the bill for ${itemData['Party Name']} (C-Note: ${itemData['C-Note No']})?\n\nThis action cannot be undone.`)) {
-                        const card = deleteBtn.closest('.flat-card');
-                        if (card) card.remove();
-                        
-                        saveToSyncQueue({ action: 'delete', rowIndex: itemData.rowIndex });
-                    }
+                    pendingDeleteData = JSON.parse(decodeURIComponent(deleteBtn.getAttribute('data-item')));
+                    pendingDeleteCard = deleteBtn.closest('.result-card-wrapper');
+                    
+                    document.getElementById('deleteModalText').textContent = `Are you sure you want to delete the bill for ${pendingDeleteData['Party Name']} (C-Note: ${pendingDeleteData['C-Note No']})?`;
+                    document.getElementById('deleteModal').classList.remove('hidden');
                 }
 
                 // EDIT BILL
@@ -1180,6 +1201,23 @@ function doGet(e) {
                     submitBtn.classList.add('bg-primary-dark', 'text-white'); 
                     submitText.textContent = "Update Bill";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            // Handle Custom Modal Confirmations
+            document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                document.getElementById('deleteModal').classList.add('hidden');
+                pendingDeleteData = null;
+                pendingDeleteCard = null;
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                if (pendingDeleteData) {
+                    if (pendingDeleteCard) pendingDeleteCard.remove();
+                    saveToSyncQueue({ action: 'delete', rowIndex: pendingDeleteData.rowIndex });
+                    document.getElementById('deleteModal').classList.add('hidden');
+                    pendingDeleteData = null;
+                    pendingDeleteCard = null;
                 }
             });
 
@@ -1428,7 +1466,7 @@ function doGet(e) {
                         todayResults.innerHTML = `
                             <div class="text-center py-16 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50">
                                 <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-400 dark:text-slate-500">receipt_long</span>
-                                <p class="font-bold text-sm sm:text-base text-slate-500 dark:text-slate-400 uppercase">No bills generated on this date</p>
+                                <p class="font-bold text-sm sm:text-base text-slate-500 dark:text-slate-400 uppercase tracking-wider">No bills generated on this date</p>
                             </div>`;
                     } else {
                         let totalAmount = 0;
