@@ -15,8 +15,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- PDF Generation Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Image Generation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Google Fonts: Roboto and Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -705,84 +705,73 @@ function doGet(e) {
             });
             // --- END PWA SETUP ---
             
-            // --- WhatsApp PDF Generation Setup ---
-            async function shareDocument(elementId, filename) {
-                showSnackbar("Preparing PDF for WhatsApp...", false);
+            // --- WhatsApp Image Generation Setup ---
+            async function shareImage(elementId, filename) {
+                showSnackbar("Preparing Image for WhatsApp...", false);
                 
                 // CRITICAL FIX: Save scroll position and instantly scroll to top 
-                // to prevent blank PDF generation on mobile devices.
+                // to prevent blank image generation on mobile devices.
                 const prevScrollY = window.scrollY;
                 window.scrollTo(0, 0);
 
                 const originalElement = document.getElementById(elementId);
                 const clone = originalElement.cloneNode(true);
                 clone.id = ""; 
-                clone.classList.remove('hidden');
-                clone.style.display = 'block'; // Force display
                 
-                const wrapper = document.createElement('div');
-                wrapper.style.position = 'absolute';
-                wrapper.style.top = '0';
-                wrapper.style.left = '0';
-                wrapper.style.width = '800px'; 
-                wrapper.style.backgroundColor = 'white';
-                wrapper.style.zIndex = '-100'; // Keep behind the main UI
+                // Ensure the clone is visible to html2canvas but hidden from the user
+                clone.style.cssText = 'display: block !important; position: absolute; top: 0; left: 0; width: 800px; background-color: white; z-index: -1000; overflow: visible;';
                 
-                wrapper.appendChild(clone);
-                document.body.appendChild(wrapper);
-
-                const opt = {
-                    margin: 0.4,
-                    filename: filename,
-                    image: { type: 'jpeg', quality: 1.0 },
-                    html2canvas: { 
-                        scale: 2, 
-                        useCORS: true, 
-                        logging: false,
-                        scrollY: 0,
-                        windowWidth: 800
-                    },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
-                };
+                document.body.appendChild(clone);
 
                 try {
-                    // Generate PDF Blob
-                    const pdfBlob = await html2pdf().set(opt).from(wrapper).output('blob');
-                    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+                    // Give the browser a tiny moment to calculate layout for the clone
+                    await new Promise(resolve => setTimeout(resolve, 100));
 
-                    // Clean up and immediately restore user's scroll position
-                    document.body.removeChild(wrapper);
-                    window.scrollTo(0, prevScrollY);
+                    const canvas = await html2canvas(clone, {
+                        scale: 2, // High quality
+                        useCORS: true,
+                        logging: false,
+                        scrollY: 0, 
+                        windowWidth: 800
+                    });
 
-                    // Share Native
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        await navigator.share({
-                            title: 'Invoice',
-                            files: [file]
-                        });
-                        showSnackbar("Shared successfully!");
-                    } else {
-                        // Safe fallback download for browsers that don't support native sharing
-                        const url = window.URL.createObjectURL(pdfBlob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = filename;
-                        document.body.appendChild(a);
-                        a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                        
-                        showSnackbar("PDF downloaded. Attach it in WhatsApp manually.", false);
-                    }
+                    canvas.toBlob(async (blob) => {
+                        const file = new File([blob], filename, { type: 'image/jpeg', lastModified: new Date().getTime() });
+
+                        // Clean up and immediately restore user's scroll position
+                        document.body.removeChild(clone);
+                        window.scrollTo(0, prevScrollY);
+
+                        // Share Native
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            await navigator.share({
+                                title: 'Invoice',
+                                files: [file]
+                            });
+                            showSnackbar("Shared successfully!");
+                        } else {
+                            // Safe fallback download for browsers that don't support native sharing
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            document.body.removeChild(a);
+                            
+                            showSnackbar("Image downloaded. Attach it in WhatsApp manually.", false);
+                        }
+                    }, 'image/jpeg', 0.98);
                 } catch (err) {
-                    console.error('PDF Share Error:', err);
-                    if(document.body.contains(wrapper)) document.body.removeChild(wrapper);
+                    console.error('Image Share Error:', err);
+                    if(document.body.contains(clone)) document.body.removeChild(clone);
                     window.scrollTo(0, prevScrollY);
-                    showSnackbar("Error generating PDF.", true);
+                    showSnackbar("Error generating image.", true);
                 }
             }
-            // --- END WhatsApp PDF Generation ---
+            // --- END WhatsApp Image Generation ---
             
             const form = document.getElementById('billingForm');
             const dateInput = document.getElementById('date');
@@ -1047,7 +1036,7 @@ function doGet(e) {
                 if (shareBtn) {
                     const itemData = JSON.parse(decodeURIComponent(shareBtn.getAttribute('data-item')));
                     prepareSingleBillData(itemData);
-                    shareDocument('printArea', `Invoice_${itemData['C-Note No'] || 'Bill'}.pdf`);
+                    shareImage('printArea', `Invoice_${itemData['C-Note No'] || 'Bill'}.jpg`);
                 }
 
                 // DELETE BILL
@@ -1301,7 +1290,7 @@ function doGet(e) {
                 if (prepareMonthlyBillData()) {
                     monthModal.classList.add('hidden');
                     const [selYear, selMonth] = monthSelector.value.split('-');
-                    shareDocument('printAreaMonthly', `Monthly_Statement_${selMonth}_${selYear}.pdf`);
+                    shareImage('printAreaMonthly', `Monthly_Statement_${selMonth}_${selYear}.jpg`);
                 }
             });
 
