@@ -222,7 +222,7 @@
 
     <!-- App Bar -->
     <header class="print:hidden bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm w-full fixed top-0 z-50">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <div class="flex items-center gap-3 sm:gap-4 overflow-hidden">
                     <button id="hamburgerBtn" class="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors flex items-center justify-center flex-shrink-0">
@@ -246,7 +246,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="print:hidden pt-24 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <main class="print:hidden pt-24 sm:pt-32 pb-16 px-4 sm:px-6 lg:px-8 w-full">
         
         <!-- Form Section -->
         <div id="entrySection">
@@ -329,19 +329,20 @@
                         <span id="searchText">Search</span>
                     </button>
                 </div>
+
+                <!-- Monthly Bill Trigger Container (Moved Above Results) -->
+                <div id="monthlyBillContainer" class="hidden mb-6 pb-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <p class="text-sm font-semibold text-slate-500 hidden sm:block">Combine these search results into a single statement:</p>
+                    <button id="generateMonthlyBillBtn" class="md-btn md-btn-primary px-8 py-3.5 text-sm w-full sm:w-auto shadow-md">
+                        <span class="material-icons mr-2 text-[20px]">date_range</span> Generate Monthly Bill
+                    </button>
+                </div>
                 
                 <div id="searchResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
                     <div class="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
                         <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300">search</span>
                         <p class="font-semibold text-sm sm:text-base text-slate-500">Enter a query to find bills</p>
                     </div>
-                </div>
-
-                <!-- Monthly Bill Trigger Container -->
-                <div id="monthlyBillContainer" class="hidden mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-slate-100 flex justify-end">
-                    <button id="generateMonthlyBillBtn" class="md-btn md-btn-primary px-8 py-3.5 text-sm w-full sm:w-auto">
-                        <span class="material-icons mr-2 text-[20px]">date_range</span> Generate Monthly Bill
-                    </button>
                 </div>
             </div>
         </div>
@@ -710,20 +711,35 @@ function doGet(e) {
                 const originalElement = document.getElementById(elementId);
                 const clone = originalElement.cloneNode(true);
                 clone.id = ""; 
-                document.body.appendChild(clone);
                 
-                clone.style.setProperty('display', 'block', 'important');
-                clone.style.position = 'absolute';
-                clone.style.left = '-9999px';
-                clone.style.top = '0';
-                clone.style.width = '800px'; 
-                clone.style.backgroundColor = 'white';
+                // CRITICAL FIX: Ensure Tailwind hidden class is removed for html2canvas
+                clone.classList.remove('hidden');
+                clone.classList.add('block');
+                
+                // Place the clone in a fixed-size wrapper to prevent mobile viewport clipping
+                const wrapper = document.createElement('div');
+                wrapper.style.position = 'absolute';
+                wrapper.style.top = '0';
+                wrapper.style.left = '0';
+                wrapper.style.width = '800px'; // Force desktop width for PDF
+                wrapper.style.backgroundColor = 'white';
+                wrapper.style.zIndex = '-10000'; // Hide firmly behind the app
+                
+                wrapper.appendChild(clone);
+                document.body.appendChild(wrapper);
 
                 const opt = {
                     margin: 0.5,
                     filename: filename,
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true, logging: false },
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true, 
+                        logging: false,
+                        windowWidth: 800, // Force canvas width to match wrapper
+                        scrollY: 0,       // Ignore mobile scrolling offsets
+                        scrollX: 0
+                    },
                     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
                     pagebreak: { mode: ['css', 'legacy'] }
                 };
@@ -731,7 +747,7 @@ function doGet(e) {
                 showSnackbar("Preparing PDF for WhatsApp...", false);
 
                 try {
-                    const pdfBlob = await html2pdf().set(opt).from(clone).output('blob');
+                    const pdfBlob = await html2pdf().set(opt).from(wrapper).output('blob');
                     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
 
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -741,15 +757,18 @@ function doGet(e) {
                         });
                         showSnackbar("Shared successfully!");
                     } else {
-                        html2pdf().set(opt).from(clone).save();
+                        // Fallback for older browsers
+                        html2pdf().set(opt).from(wrapper).save();
                         showSnackbar("PDF downloaded. Attach it in WhatsApp manually.", false);
-                        window.open('https://wa.me/?text=Please+find+the+downloaded+bill+attached.', '_blank');
+                        setTimeout(() => {
+                            window.open('https://wa.me/?text=Please+find+the+downloaded+bill+attached.', '_blank');
+                        }, 500);
                     }
                 } catch (err) {
                     console.error('PDF Share Error:', err);
                     showSnackbar("Error generating PDF.", true);
                 } finally {
-                    document.body.removeChild(clone);
+                    document.body.removeChild(wrapper);
                 }
             }
             // --- END WhatsApp PDF Generation ---
@@ -939,45 +958,42 @@ function doGet(e) {
                 });
             });
 
-            // Card Generation: Material Look
+            // Card Generation: Material Look (Compact & Minimal)
             function generateResultCard(item, dateStr, amount, isSearchTab = false) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
-                const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Weight';
+                const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Wt';
                 
                 return `
-                <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 hover:shadow-md transition-all mb-4 mx-0.5 sm:mx-1">
+                <div class="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-slate-200 hover:shadow-md transition-all mb-3 mx-0.5 sm:mx-1">
                     
-                    <div class="flex flex-col sm:flex-row justify-between items-start gap-4 sm:gap-3">
-                        <div class="overflow-hidden flex-1 w-full">
-                            <div class="font-bold text-lg text-slate-900 mb-2 truncate" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
-                            <div class="flex flex-wrap gap-2 text-slate-600">
-                                <span class="flex items-center text-xs font-semibold bg-slate-100 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
-                                <span class="flex items-center text-xs font-semibold bg-slate-100 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
+                    <div class="flex justify-between items-start gap-3">
+                        <div class="overflow-hidden flex-1">
+                            <div class="font-bold text-base sm:text-lg text-slate-900 mb-1.5 leading-tight break-words">${item['Party Name'] || '-'}</div>
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium">
+                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1 text-slate-400">receipt</span>${item['C-Note No'] || '-'}</span>
+                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1 text-slate-400">calendar_today</span>${dateStr || '-'}</span>
+                                <span class="flex items-center truncate max-w-[120px] sm:max-w-[200px]" title="${item['Destination'] || '-'}"><span class="material-icons text-[14px] mr-1 text-slate-400">place</span>${item['Destination'] || '-'}</span>
                             </div>
                         </div>
-                        <div class="text-left sm:text-right shrink-0 w-full sm:w-auto border-t border-slate-100 sm:border-0 pt-3 sm:pt-0">
-                            <div class="font-bold text-xl sm:text-2xl text-primary leading-none mb-1.5">₹${amount.toFixed(2)}</div>
-                            <div class="text-xs font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded inline-block border border-slate-100">${weightDisplay}</div>
+                        <div class="text-right shrink-0 flex flex-col items-end">
+                            <div class="font-bold text-lg sm:text-xl text-primary leading-none">₹${amount.toFixed(2)}</div>
+                            <div class="text-[10px] sm:text-xs font-semibold text-slate-400 mt-1.5 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${weightDisplay}</div>
                         </div>
-                    </div>
-
-                    <div class="text-xs sm:text-sm font-semibold text-slate-600 bg-slate-50 p-2 sm:p-3 rounded-lg border border-slate-100 uppercase truncate mt-4" title="${item['Destination'] || '-'}">
-                        <span class="material-icons text-[18px] inline-block align-middle mr-1 text-slate-400">place</span> ${item['Destination'] || '-'}
                     </div>
 
                     ${!isSearchTab ? `
-                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 pt-4 mt-4">
-                        <button class="edit-bill-btn text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-primary rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
-                            <span class="material-icons text-[18px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 pt-3 mt-3">
+                        <button class="edit-bill-btn text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-primary rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
+                            <span class="material-icons text-[16px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
                         </button>
-                        <button class="delete-bill-btn text-red-600 bg-red-50 hover:bg-red-100 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
-                            <span class="material-icons text-[18px]">delete</span> <span class="ml-1 sm:hidden">Delete</span>
+                        <button class="delete-bill-btn text-red-600 bg-red-50 hover:bg-red-100 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
+                            <span class="material-icons text-[16px]">delete</span> <span class="ml-1 sm:hidden">Del</span>
                         </button>
-                        <button class="share-bill-btn text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
-                            <span class="material-icons text-[18px] mr-1">share</span> WA
+                        <button class="share-bill-btn text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
+                            <span class="material-icons text-[16px] mr-1">share</span> WA
                         </button>
-                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
-                            <span class="material-icons text-[18px] mr-1.5">print</span> Print
+                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-lg px-3 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
+                            <span class="material-icons text-[16px] mr-1.5">print</span> Print
                         </button>
                     </div>
                     ` : ''}
