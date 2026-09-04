@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -27,6 +27,7 @@
     
     <script>
         tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
             theme: {
                 extend: {
                     fontFamily: {
@@ -37,6 +38,11 @@
                         primary: '#4F46E5', /* Indigo 600 */
                         'primary-dark': '#4338CA', /* Indigo 700 */
                         'primary-light': '#EEF2FF', /* Indigo 50 */
+                        
+                        /* Dark Mode specifics */
+                        'dark-bg': '#0F172A',
+                        'dark-card': '#1E293B',
+                        'dark-border': '#334155'
                     }
                 }
             }
@@ -44,8 +50,8 @@
     </script>
     <style>
         body {
-            background-color: #F8FAFC; /* Slate 50 */
             -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Default Screen View */
@@ -59,6 +65,7 @@
             body {
                 background-color: white !important;
                 background-image: none !important;
+                color: black !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -80,11 +87,9 @@
 
         /* Material UI Components */
         .md-card {
-            background-color: white;
-            border: 1px solid #E2E8F0;
             border-radius: 1rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out, background-color 0.3s ease, border-color 0.3s ease;
         }
         
         .md-card:hover {
@@ -92,20 +97,17 @@
         }
 
         .md-input {
-            background-color: white;
-            border: 1px solid #CBD5E1;
             border-radius: 0.75rem;
             padding: 0.75rem 1rem;
             font-size: 1rem;
             font-weight: 500;
-            color: #1E293B;
             transition: all 0.2s ease;
             width: 100%;
         }
 
         .md-input:focus {
             outline: none;
-            border-color: #4F46E5;
+            border-color: #4F46E5 !important;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
         }
 
@@ -136,24 +138,12 @@
             box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4), 0 4px 6px -2px rgba(79, 70, 229, 0.2);
         }
 
-        .md-btn-tonal {
-            background-color: #F1F5F9;
-            color: #475569;
-        }
-
-        .md-btn-tonal:hover {
-            background-color: #E2E8F0;
-            color: #1E293B;
-        }
-
         /* Snackbar */
         #snackbar {
             visibility: hidden;
             min-width: 250px;
             width: 90%;
             max-width: 400px;
-            background-color: #1E293B;
-            color: white;
             text-align: center;
             border-radius: 9999px;
             padding: 14px 24px;
@@ -185,59 +175,75 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+        
+        /* Dark Mode Scrollbar */
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748B; }
+
+        /* Disable dark mode styles for print templates specifically */
+        .force-light-print {
+            background-color: white !important;
+            color: black !important;
+        }
+        .force-light-print * {
+            border-color: black !important;
+        }
     </style>
 </head>
-<body class="font-sans antialiased text-slate-800">
+<body class="font-sans antialiased bg-slate-50 text-slate-800 dark:bg-dark-bg dark:text-slate-100">
 
     <!-- Slide-out Navigation Drawer -->
     <div id="drawerOverlay" class="print:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[90] hidden transition-opacity duration-300 opacity-0"></div>
-    <div id="navDrawer" class="print:hidden fixed top-0 left-0 h-full w-72 sm:w-80 bg-white shadow-2xl z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
-        <div class="h-20 border-b border-slate-100 flex items-center justify-between px-6 bg-white shrink-0">
-            <span class="font-bold text-xl text-slate-800 flex items-center">
-                <span class="material-icons mr-3 text-primary">menu_open</span> Menu
+    <div id="navDrawer" class="print:hidden fixed top-0 left-0 h-full w-72 sm:w-80 bg-white dark:bg-dark-card shadow-2xl z-[100] transform -translate-x-full transition-transform duration-300 flex flex-col">
+        <div class="h-20 border-b border-slate-100 dark:border-dark-border flex items-center justify-between px-6 shrink-0">
+            <span class="font-bold text-xl text-slate-800 dark:text-white flex items-center">
+                <span class="material-icons mr-3 text-primary dark:text-indigo-400">menu_open</span> Menu
             </span>
-            <button id="closeDrawerBtn" class="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors flex items-center justify-center">
+            <button id="closeDrawerBtn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center">
                 <span class="material-icons text-xl">close</span>
             </button>
         </div>
         <div class="flex flex-col py-4 px-3 gap-1 overflow-y-auto">
-            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors text-left flex items-center active bg-primary-light text-primary" data-target="entrySection">
+            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-indigo-400 transition-colors text-left flex items-center active bg-primary-light dark:bg-indigo-900/30 text-primary dark:text-indigo-400" data-target="entrySection">
                 <span class="material-icons mr-4 text-[22px]">add_circle_outline</span> <span id="navEntryText">New Bill</span>
             </button>
-            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors text-left flex items-center" data-target="searchSection">
+            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-indigo-400 transition-colors text-left flex items-center" data-target="searchSection">
                 <span class="material-icons mr-4 text-[22px]">search</span> Search Entry
             </button>
-            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary transition-colors text-left flex items-center" data-target="todaySection">
+            <button class="nav-item px-4 py-3.5 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary dark:hover:text-indigo-400 transition-colors text-left flex items-center" data-target="todaySection">
                 <span class="material-icons mr-4 text-[22px]">today</span> Daily Bills
             </button>
             
-            <div class="border-t border-slate-100 my-3 mx-2"></div>
+            <div class="border-t border-slate-100 dark:border-dark-border my-3 mx-2"></div>
             
             <!-- PWA Install Button -->
-            <button id="installAppBtn" class="px-4 py-3.5 rounded-xl text-sm font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors text-left flex items-center hidden">
+            <button id="installAppBtn" class="px-4 py-3.5 rounded-xl text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors text-left flex items-center hidden">
                 <span class="material-icons mr-4 text-[22px]">download</span> Install App
             </button>
         </div>
     </div>
 
     <!-- App Bar -->
-    <header class="print:hidden bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm w-full fixed top-0 z-50">
+    <header class="print:hidden bg-white/90 dark:bg-dark-bg/90 backdrop-blur-md border-b border-slate-200 dark:border-dark-border shadow-sm w-full fixed top-0 z-50 transition-colors">
         <div class="w-full px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <div class="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                    <button id="hamburgerBtn" class="p-2 -ml-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors flex items-center justify-center flex-shrink-0">
+                    <button id="hamburgerBtn" class="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors flex items-center justify-center flex-shrink-0">
                         <span class="material-icons text-[24px] sm:text-[28px]">menu</span>
                     </button>
-                    <div class="bg-primary-light text-primary p-2 sm:p-2.5 rounded-xl flex items-center justify-center flex-shrink-0 hidden sm:flex">
+                    <div class="bg-primary-light dark:bg-indigo-900/40 text-primary dark:text-indigo-400 p-2 sm:p-2.5 rounded-xl flex items-center justify-center flex-shrink-0 hidden sm:flex">
                         <span class="material-icons text-xl sm:text-2xl">local_shipping</span>
                     </div>
                     <div class="truncate">
-                        <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 leading-none mb-0.5 sm:mb-1 truncate">PCS Billing</h1>
-                        <p class="text-[10px] sm:text-xs font-semibold tracking-widest uppercase text-slate-500">Courier & Cargo</p>
+                        <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white leading-none mb-0.5 sm:mb-1 truncate">PCS Billing</h1>
+                        <p class="text-[10px] sm:text-xs font-semibold tracking-widest uppercase text-slate-500 dark:text-slate-400">Courier & Cargo</p>
                     </div>
                 </div>
-                <div class="flex-shrink-0 ml-3">
-                    <button id="helpBtn" class="p-2 rounded-full hover:bg-slate-100 text-slate-500 transition-colors flex items-center justify-center" title="Setup Instructions">
+                <div class="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-3">
+                    <button id="themeToggleBtn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center" title="Toggle Dark Mode">
+                        <span class="material-icons text-[24px]" id="themeIcon">dark_mode</span>
+                    </button>
+                    <button id="helpBtn" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center" title="Setup Instructions">
                         <span class="material-icons text-[24px]">help_outline</span>
                     </button>
                 </div>
@@ -252,47 +258,47 @@
         <div id="entrySection">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight" id="entryTitle">New Bill Entry</h2>
-                    <p class="font-medium text-slate-500 mt-1 text-sm sm:text-base" id="entrySubtitle">Fill in the details below to generate a new record.</p>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight" id="entryTitle">New Bill Entry</h2>
+                    <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base" id="entrySubtitle">Fill in the details below to generate a new record.</p>
                 </div>
-                <div class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 shadow-sm text-xs sm:text-sm font-semibold text-slate-700 self-start sm:self-auto rounded-full">
-                    <span class="material-icons text-[18px] mr-2 text-primary">calendar_today</span>
+                <div class="inline-flex items-center px-4 py-2 bg-white dark:bg-dark-card border border-slate-200 dark:border-dark-border shadow-sm text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 self-start sm:self-auto rounded-full">
+                    <span class="material-icons text-[18px] mr-2 text-primary dark:text-indigo-400">calendar_today</span>
                     <span id="currentDateDisplay"></span>
                 </div>
             </div>
 
-            <div class="md-card overflow-hidden bg-white max-w-5xl mx-auto transition-colors" id="entryCard">
+            <div class="md-card overflow-hidden bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto transition-colors" id="entryCard">
                 <form id="billingForm" class="p-5 sm:p-8">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5 sm:gap-y-6">
                         <div class="flex flex-col gap-1.5 sm:gap-2">
-                            <label for="date" class="font-semibold text-xs sm:text-sm text-slate-600">Date</label>
-                            <input type="date" id="date" name="Date" required class="md-input" value="">
+                            <label for="date" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Date</label>
+                            <input type="date" id="date" name="Date" required class="md-input bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white" value="">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:gap-2">
-                            <label for="cnote" class="font-semibold text-xs sm:text-sm text-slate-600">C-Note No.</label>
-                            <input type="text" id="cnote" name="C-Note No" required autocomplete="off" class="md-input">
+                            <label for="cnote" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">C-Note No.</label>
+                            <input type="text" id="cnote" name="C-Note No" required autocomplete="off" class="md-input bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
-                            <label for="partyName" class="font-semibold text-xs sm:text-sm text-slate-600">Party Name</label>
-                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="md-input uppercase" list="entryPartyNamesList">
+                            <label for="partyName" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Party Name</label>
+                            <input type="text" id="partyName" name="Party Name" required autocomplete="off" class="md-input uppercase bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white" list="entryPartyNamesList">
                             <datalist id="entryPartyNamesList"></datalist>
                         </div>
                         <div class="flex flex-col gap-1.5 sm:gap-2 sm:col-span-2">
-                            <label for="destination" class="font-semibold text-xs sm:text-sm text-slate-600">Destination / Place</label>
-                            <input type="text" id="destination" name="Destination" required autocomplete="off" class="md-input uppercase">
+                            <label for="destination" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Destination / Place</label>
+                            <input type="text" id="destination" name="Destination" required autocomplete="off" class="md-input uppercase bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:gap-2">
-                            <label for="weight" class="font-semibold text-xs sm:text-sm text-slate-600">Weight (Kg) <span class="font-normal text-slate-400">(Optional)</span></label>
-                            <input type="number" step="0.01" id="weight" name="Weight (Kg)" autocomplete="off" class="md-input">
+                            <label for="weight" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Weight (Kg) <span class="font-normal text-slate-400 dark:text-slate-500">(Optional)</span></label>
+                            <input type="number" step="0.01" id="weight" name="Weight (Kg)" autocomplete="off" class="md-input bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white">
                         </div>
                         <div class="flex flex-col gap-1.5 sm:gap-2">
-                            <label for="amount" class="font-semibold text-xs sm:text-sm text-primary">Amount (₹)</label>
-                            <input type="number" step="0.01" id="amount" name="Amount" required autocomplete="off" class="md-input text-lg sm:text-xl text-primary font-bold">
+                            <label for="amount" class="font-semibold text-xs sm:text-sm text-primary dark:text-indigo-400">Amount (₹)</label>
+                            <input type="number" step="0.01" id="amount" name="Amount" required autocomplete="off" class="md-input text-lg sm:text-xl font-bold bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-primary dark:text-indigo-400">
                         </div>
                     </div>
 
-                    <div class="mt-8 sm:mt-10 pt-6 border-t border-slate-100 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
-                        <button type="button" id="resetBtn" class="md-btn md-btn-tonal w-full sm:w-auto px-8 py-3.5 sm:py-3 text-sm">
+                    <div class="mt-8 sm:mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4">
+                        <button type="button" id="resetBtn" class="md-btn md-btn-tonal bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 w-full sm:w-auto px-8 py-3.5 sm:py-3 text-sm">
                             Clear / Cancel
                         </button>
                         <button type="submit" id="submitBtn" class="md-btn md-btn-primary w-full sm:w-auto px-10 py-3.5 sm:py-3 text-sm">
@@ -312,16 +318,16 @@
         <div id="searchSection" class="hidden">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Search Records</h2>
-                    <p class="font-medium text-slate-500 mt-1 text-sm sm:text-base">Look up previous bills to generate monthly statements.</p>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Search Records</h2>
+                    <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">Look up previous bills to generate monthly statements.</p>
                 </div>
             </div>
             
-            <div class="md-card p-5 sm:p-8 bg-white max-w-5xl mx-auto">
+            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto">
                 <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6 sm:mb-8 items-stretch sm:items-end">
                     <div class="flex flex-col gap-1.5 sm:gap-2 flex-grow w-full">
-                        <label for="recordSearchInput" class="font-semibold text-xs sm:text-sm text-slate-600">Enter Party Name or C-Note No.</label>
-                        <input type="text" id="recordSearchInput" autocomplete="off" class="md-input w-full uppercase" list="searchPartyNamesList" placeholder="Search...">
+                        <label for="recordSearchInput" class="font-semibold text-xs sm:text-sm text-slate-600 dark:text-slate-300">Enter Party Name or C-Note No.</label>
+                        <input type="text" id="recordSearchInput" autocomplete="off" class="md-input w-full uppercase bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white" list="searchPartyNamesList" placeholder="Search...">
                         <datalist id="searchPartyNamesList"></datalist>
                     </div>
                     <button type="button" id="doSearchBtn" class="md-btn md-btn-primary w-full sm:w-auto px-8 py-3.5 sm:py-0 sm:h-[48px] text-sm">
@@ -331,17 +337,17 @@
                 </div>
                 
                 <!-- Monthly Bill Trigger Container -->
-                <div id="monthlyBillContainer" class="hidden mb-6 pb-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <p class="text-sm font-semibold text-slate-500 hidden sm:block">Combine these search results into a single statement:</p>
+                <div id="monthlyBillContainer" class="hidden mb-6 pb-6 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 hidden sm:block">Combine these search results into a single statement:</p>
                     <button id="generateMonthlyBillBtn" class="md-btn md-btn-primary px-8 py-3.5 text-sm w-full sm:w-auto shadow-md">
                         <span class="material-icons mr-2 text-[20px]">date_range</span> Generate Monthly Bill
                     </button>
                 </div>
                 
                 <div id="searchResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
-                    <div class="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                        <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300">search</span>
-                        <p class="font-semibold text-sm sm:text-base text-slate-500">Enter a query to find bills</p>
+                    <div class="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                        <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">search</span>
+                        <p class="font-semibold text-sm sm:text-base text-slate-500 dark:text-slate-400">Enter a query to find bills</p>
                     </div>
                 </div>
             </div>
@@ -351,54 +357,54 @@
         <div id="todaySection" class="hidden">
             <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4 max-w-5xl mx-auto">
                 <div>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Daily Bills</h2>
-                    <p class="font-medium text-slate-500 mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Daily Bills</h2>
+                    <p class="font-medium text-slate-500 dark:text-slate-400 mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
                 </div>
                 <div class="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
-                    <input type="date" id="dailyDateSelector" class="md-input py-2 text-sm flex-grow sm:w-48">
-                    <button type="button" id="refreshTodayBtn" class="md-btn md-btn-tonal w-12 h-12 shrink-0" title="Refresh">
+                    <input type="date" id="dailyDateSelector" class="md-input py-2 text-sm flex-grow sm:w-48 bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white">
+                    <button type="button" id="refreshTodayBtn" class="md-btn md-btn-tonal bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 w-12 h-12 shrink-0" title="Refresh">
                         <span class="material-icons text-[24px]" id="refreshIcon">refresh</span>
                     </button>
                 </div>
             </div>
             
-            <div class="md-card p-5 sm:p-8 bg-white max-w-5xl mx-auto">
+            <div class="md-card p-5 sm:p-8 bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border max-w-5xl mx-auto">
                 <div id="todayResults" class="space-y-4 max-h-[500px] overflow-y-auto p-1">
-                    <div class="text-center py-16 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                        <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300">receipt_long</span>
-                        <p class="font-semibold text-sm sm:text-base text-slate-500">Click refresh to load bills</p>
+                    <div class="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                        <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">receipt_long</span>
+                        <p class="font-semibold text-sm sm:text-base text-slate-500 dark:text-slate-400">Click refresh to load bills</p>
                     </div>
                 </div>
-                <div id="todaySummary" class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-3 font-semibold text-lg sm:text-xl text-slate-700 hidden">
+                <div id="todaySummary" class="mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-3 font-semibold text-lg sm:text-xl text-slate-700 dark:text-slate-300 hidden">
                     <span>Total Amount:</span>
-                    <span id="todayTotalAmount" class="text-primary font-bold bg-primary-light px-4 py-1.5 rounded-xl break-all text-center">₹0.00</span>
+                    <span id="todayTotalAmount" class="text-primary dark:text-indigo-400 font-bold bg-primary-light dark:bg-indigo-900/30 px-4 py-1.5 rounded-xl break-all text-center">₹0.00</span>
                 </div>
             </div>
         </div>
 
         <!-- Setup Instructions Modal -->
-        <div id="setupModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
-            <div class="md-card max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0 rounded-t-2xl">
-                    <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                        <span class="material-icons mr-2 text-primary">settings</span>
+        <div id="setupModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4 transition-opacity">
+            <div class="md-card max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-white dark:bg-dark-card border-slate-200 dark:border-dark-border">
+                <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 flex-shrink-0 rounded-t-2xl">
+                    <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                        <span class="material-icons mr-2 text-primary dark:text-indigo-400">settings</span>
                         Backend Setup
                     </h3>
-                    <button id="closeModalBtn" class="p-2 rounded-full hover:bg-slate-200 text-slate-500 transition-colors flex items-center justify-center">
+                    <button id="closeModalBtn" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center">
                         <span class="material-icons text-[20px]">close</span>
                     </button>
                 </div>
-                <div class="p-6 text-sm text-slate-600 space-y-4 overflow-y-auto flex-grow bg-white">
+                <div class="p-6 text-sm text-slate-600 dark:text-slate-300 space-y-4 overflow-y-auto flex-grow bg-white dark:bg-dark-card">
                     <p>To connect this form to your Google Sheet, follow these steps:</p>
                     <ol class="list-decimal pl-5 space-y-3 font-medium">
                         <li>Create a new Google Sheet.</li>
                         <li>Create headers in the first row exactly as follows: <br>
-                            <code class="bg-slate-100 p-2 border border-slate-200 rounded block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap text-slate-800">Date | C-Note No | Party Name | Destination | Weight (Kg) | Amount</code>
+                            <code class="bg-slate-100 dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap text-slate-800 dark:text-slate-200">Date | C-Note No | Party Name | Destination | Weight (Kg) | Amount</code>
                         </li>
                         <li>Go to <strong>Extensions > Apps Script</strong>.</li>
                         <li>Paste the following code:</li>
                     </ol>
-                    <pre class="bg-slate-800 text-emerald-400 p-4 rounded-xl text-xs overflow-x-auto font-mono shadow-inner">
+                    <pre class="bg-slate-800 dark:bg-slate-900 text-emerald-400 p-4 rounded-xl text-xs overflow-x-auto font-mono shadow-inner border dark:border-slate-700">
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
@@ -478,43 +484,44 @@ function doGet(e) {
                     </pre>
                     <ol class="list-decimal pl-5 space-y-3 font-medium" start="5">
                         <li>Click <strong>Deploy > Manage deployments</strong>, edit (pencil icon), <strong>choose "New version"</strong> and deploy.</li>
-                        <li class="pt-3 border-t border-slate-100 mt-3">
+                        <li class="pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
                             <strong>To fully enable App Installation:</strong> Create a blank file named <code>sw.js</code> in your GitHub repository alongside <code>index.html</code> and paste this line inside it:<br>
-                            <code class="bg-slate-100 p-2 border border-slate-200 rounded block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap text-slate-800">self.addEventListener('fetch', function(e) {});</code>
+                            <code class="bg-slate-100 dark:bg-slate-800 p-2 border border-slate-200 dark:border-slate-700 rounded block mt-2 font-mono text-[10px] sm:text-xs overflow-x-auto whitespace-nowrap text-slate-800 dark:text-slate-200">self.addEventListener('fetch', function(e) {});</code>
                         </li>
                     </ol>
                 </div>
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end flex-shrink-0 rounded-b-2xl">
-                    <button id="closeModalBtn2" class="md-btn md-btn-tonal px-6 py-2.5 text-sm w-full sm:w-auto">Understood</button>
+                <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end flex-shrink-0 rounded-b-2xl">
+                    <button id="closeModalBtn2" class="md-btn md-btn-tonal bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white px-6 py-2.5 text-sm w-full sm:w-auto">Understood</button>
                 </div>
             </div>
         </div>
 
         <!-- Month Selection Modal -->
-        <div id="monthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-[110] flex items-center justify-center p-4 transition-opacity">
-            <div class="md-card max-w-sm w-full p-6 sm:p-8 flex flex-col bg-white">
-                <h3 class="text-xl font-bold text-slate-900 mb-1 flex items-center">
-                    <span class="material-icons mr-2 text-primary">receipt_long</span> Generate Bill
+        <div id="monthModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-[110] flex items-center justify-center p-4 transition-opacity">
+            <div class="md-card max-w-sm w-full p-6 sm:p-8 flex flex-col bg-white dark:bg-dark-card overflow-visible border-slate-200 dark:border-dark-border">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-1 flex items-center">
+                    <span class="material-icons mr-2 text-primary dark:text-indigo-400">receipt_long</span> Generate Bill
                 </h3>
-                <p class="text-sm font-medium text-slate-500 mb-6">Choose month and add any pending dues.</p>
+                <p class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-6">Choose month and add any pending dues.</p>
                 
                 <div class="flex flex-col gap-4 mb-8">
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-slate-600">Billing Month</label>
-                        <input type="month" id="monthSelector" class="md-input py-2.5 font-semibold text-base text-center">
+                        <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Billing Month</label>
+                        <input type="month" id="monthSelector" class="md-input py-2.5 font-semibold text-base text-center bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border text-slate-900 dark:text-white">
                     </div>
                     <div class="flex flex-col gap-1.5">
-                        <label class="text-xs font-semibold text-slate-600">Previous Pending Amount (₹) <span class="font-normal text-slate-400">(Optional)</span></label>
-                        <input type="number" step="0.01" id="monthlyPendingAmount" class="md-input py-2.5 font-semibold text-base text-center text-primary" placeholder="0.00">
+                        <label class="text-xs font-semibold text-slate-600 dark:text-slate-300">Previous Pending Amount (₹) <span class="font-normal text-slate-400 dark:text-slate-500">(Optional)</span></label>
+                        <input type="number" step="0.01" id="monthlyPendingAmount" class="md-input py-2.5 font-semibold text-base text-center text-primary dark:text-indigo-400 bg-white dark:bg-dark-bg border-slate-300 dark:border-dark-border" placeholder="0.00">
                     </div>
                 </div>
                 
                 <div class="flex flex-col sm:flex-row justify-end gap-2 mt-auto">
-                    <button id="cancelMonthBtn" class="md-btn md-btn-tonal px-4 py-2.5 text-xs sm:text-sm w-full sm:w-1/3">Cancel</button>
-                    <!-- WhatsApp Share Option -->
+                    <button id="cancelMonthBtn" class="md-btn md-btn-tonal bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600 px-4 py-2.5 text-xs sm:text-sm w-full sm:w-1/3">Cancel</button>
+                    
                     <button id="shareMonthBtn" class="md-btn bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2.5 text-xs sm:text-sm flex items-center justify-center w-full sm:w-1/3 shadow-sm transition-colors">
                         <span class="material-icons text-[18px] mr-1.5">share</span> WA
                     </button>
+                    
                     <button id="confirmMonthBtn" class="md-btn md-btn-primary px-4 py-2.5 text-xs sm:text-sm flex items-center justify-center w-full sm:w-1/3">
                         <span class="material-icons mr-1.5 text-[18px]">print</span> Print
                     </button>
@@ -525,10 +532,10 @@ function doGet(e) {
     </main>
 
     <!-- Snackbar for Notifications -->
-    <div id="snackbar">Data saved successfully!</div>
+    <div id="snackbar" class="dark:bg-white dark:text-slate-900 shadow-lg">Data saved successfully!</div>
 
     <!-- PRINT INVOICE TEMPLATE - SINGLE -->
-    <div id="printArea" class="w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print">
+    <div id="printArea" class="w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print force-light-print">
         <div class="text-center mb-6 border-b border-gray-400 pb-4">
             <h1 class="text-2xl font-bold uppercase tracking-wide">Invoice / Bill</h1>
             <p class="text-base mt-2 font-semibold uppercase">Prabhakar Urkude</p>
@@ -549,7 +556,7 @@ function doGet(e) {
 
         <table class="w-full border-collapse border border-black mb-10 text-sm">
             <thead>
-                <tr class="bg-gray-100">
+                <tr class="bg-gray-100 text-black">
                     <th class="border border-black p-2 text-left font-semibold uppercase">C-Note No.</th>
                     <th class="border border-black p-2 text-left font-semibold uppercase">Destination</th>
                     <th class="border border-black p-2 text-right font-semibold uppercase">Weight (Kg)</th>
@@ -584,7 +591,7 @@ function doGet(e) {
     </div>
 
     <!-- PRINT INVOICE TEMPLATE - MONTHLY -->
-    <div id="printAreaMonthly" class="w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print">
+    <div id="printAreaMonthly" class="w-full max-w-4xl mx-auto bg-white text-black p-4 sm:p-8 font-print force-light-print">
         <div class="text-center mb-6 border-b border-gray-400 pb-4">
             <h1 class="text-2xl font-bold uppercase tracking-wide">Monthly Statement</h1>
             <p class="text-base mt-2 font-semibold uppercase">Prabhakar Urkude</p>
@@ -603,9 +610,10 @@ function doGet(e) {
             </div>
         </div>
 
+        <!-- Details Table -->
         <table class="w-full border-collapse border border-black mb-10 text-sm">
             <thead>
-                <tr class="bg-gray-100">
+                <tr class="bg-gray-100 text-black">
                     <th class="border border-black p-2 text-left font-semibold uppercase">Date</th>
                     <th class="border border-black p-2 text-left font-semibold uppercase">C-Note No.</th>
                     <th class="border border-black p-2 text-left font-semibold uppercase">Destination</th>
@@ -616,16 +624,16 @@ function doGet(e) {
             <tbody id="monthlyPrintTbody">
             </tbody>
             <tfoot>
-                <tr class="bg-gray-50 font-semibold text-sm" id="monthlyPrintSubtotalRow">
+                <tr class="bg-gray-50 text-black font-semibold text-sm" id="monthlyPrintSubtotalRow">
                     <td colspan="3" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Current Month Total</td>
                     <td class="border border-black p-2 text-right font-bold text-xs" id="monthlyPrintTotalWeight">-</td>
                     <td class="border border-black p-2 text-right font-bold text-sm" id="monthlyPrintSubtotalAmount">-</td>
                 </tr>
-                <tr class="bg-white font-semibold hidden text-sm" id="monthlyPrintPendingRow">
+                <tr class="bg-white text-black font-semibold hidden text-sm" id="monthlyPrintPendingRow">
                     <td colspan="4" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Previous Pending Amount</td>
                     <td class="border border-black p-2 text-right font-bold text-sm text-red-600" id="monthlyPrintPendingAmount">-</td>
                 </tr>
-                <tr class="bg-gray-100 font-bold text-base avoid-page-break">
+                <tr class="bg-gray-100 text-black font-bold text-base avoid-page-break">
                     <td colspan="4" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Grand Total</td>
                     <td class="border border-black p-2 text-right font-bold" id="monthlyPrintGrandTotal">-</td>
                 </tr>
@@ -657,6 +665,31 @@ function doGet(e) {
         // ==========================================
 
         document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Theme Toggle Logic ---
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            const themeIcon = document.getElementById('themeIcon');
+            
+            // Check local storage or system preference
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeIcon.textContent = 'light_mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.textContent = 'dark_mode';
+            }
+
+            themeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.textContent = 'light_mode';
+                } else {
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.textContent = 'dark_mode';
+                }
+            });
+            // --- End Theme Toggle Logic ---
 
             // --- PWA SETUP & MANIFEST GENERATION ---
             const manifestData = {
@@ -719,7 +752,9 @@ function doGet(e) {
                 clone.id = ""; 
                 
                 // Ensure the clone is visible to html2canvas but hidden from the user
-                clone.style.cssText = 'display: block !important; position: absolute; top: 0; left: 0; width: 800px; background-color: white; z-index: -1000; overflow: visible;';
+                // Using explicit white background and black text to override dark mode for the snapshot
+                clone.style.cssText = 'display: block !important; position: absolute; top: 0; left: 0; width: 800px; background-color: white !important; color: black !important; z-index: -1000; overflow: visible;';
+                clone.classList.remove('dark'); // Strip dark mode if applied
                 
                 document.body.appendChild(clone);
 
@@ -732,7 +767,8 @@ function doGet(e) {
                         useCORS: true,
                         logging: false,
                         scrollY: 0, 
-                        windowWidth: 800
+                        windowWidth: 800,
+                        backgroundColor: "#ffffff" // Force white background
                     });
 
                     canvas.toBlob(async (blob) => {
@@ -853,39 +889,83 @@ function doGet(e) {
 
             let editingRowIndex = null;
 
+            // --- BACKGROUND SYNC LOGIC ---
+            let isSyncing = false;
+
+            function saveToSyncQueue(data) {
+                let queue = JSON.parse(localStorage.getItem('pcs_sync_queue') || '[]');
+                queue.push({ ...data, _id: Date.now() });
+                localStorage.setItem('pcs_sync_queue', JSON.stringify(queue));
+                
+                showSnackbar(data.action === 'delete' ? "Deleted locally! Syncing..." : "Saved locally! Syncing...", false);
+                processSyncQueue();
+            }
+
+            async function processSyncQueue() {
+                if (isSyncing || !navigator.onLine || !APPS_SCRIPT_URL) return;
+                
+                let queue = JSON.parse(localStorage.getItem('pcs_sync_queue') || '[]');
+                if (queue.length === 0) return;
+
+                isSyncing = true;
+
+                while (queue.length > 0) {
+                    const item = queue[0];
+                    const formData = new FormData();
+                    
+                    // Convert JSON back to FormData for Google Apps Script
+                    for (const key in item) {
+                        if (key !== '_id' && item[key] !== null && item[key] !== undefined) {
+                            formData.append(key, item[key]);
+                        }
+                    }
+
+                    try {
+                        await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+                        // Success! Remove from local queue
+                        queue.shift();
+                        localStorage.setItem('pcs_sync_queue', JSON.stringify(queue));
+                        loadPartyNames(); // Refresh party names autocomplete in background
+                    } catch (err) {
+                        console.error("Background sync failed, will retry later.", err);
+                        break; // Stop processing on first network error, try again later
+                    }
+                }
+                
+                isSyncing = false;
+            }
+
+            // Auto-sync when internet reconnects or on page load
+            window.addEventListener('online', processSyncQueue);
+            processSyncQueue();
+            // --- END BACKGROUND SYNC LOGIC ---
+
+
             resetBtn.addEventListener('click', () => { resetFormUI(); });
 
-            form.addEventListener('submit', async (e) => {
+            form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                submitBtn.disabled = true;
-                submitText.textContent = editingRowIndex ? "Updating..." : "Saving...";
-                submitIcon.classList.add('hidden');
-                loadingSpinner.classList.remove('hidden');
+                
+                // Instantly collect data
+                const billData = {
+                    'Date': document.getElementById('date').value,
+                    'C-Note No': document.getElementById('cnote').value,
+                    'Party Name': document.getElementById('partyName').value,
+                    'Destination': document.getElementById('destination').value,
+                    'Weight (Kg)': document.getElementById('weight').value,
+                    'Amount': document.getElementById('amount').value
+                };
 
-                const formData = new FormData(form);
                 if(editingRowIndex) {
-                    formData.append('action', 'edit');
-                    formData.append('rowIndex', editingRowIndex);
+                    billData.action = 'edit';
+                    billData.rowIndex = editingRowIndex;
                 }
 
-                if (!APPS_SCRIPT_URL) {
-                    setTimeout(() => { showSnackbar("Demo: Bill Saved!"); resetFormUI(); }, 1000);
-                    return;
-                }
-
-                try {
-                    await fetch(APPS_SCRIPT_URL, { method: 'POST', body: formData, mode: 'no-cors' });
-                    showSnackbar(editingRowIndex ? "Bill Updated Successfully!" : "Bill Saved Successfully!", false);
-                    resetFormUI();
-                    loadPartyNames(); 
-                } catch (error) {
-                    console.error('Error!', error.message);
-                    showSnackbar("Error saving bill.", true);
-                    submitBtn.disabled = false;
-                    submitText.textContent = editingRowIndex ? "Update Bill" : "Save Bill";
-                    submitIcon.classList.remove('hidden');
-                    loadingSpinner.classList.add('hidden');
-                }
+                // Send to background queue instead of awaiting network
+                saveToSyncQueue(billData);
+                
+                // Instantly reset UI
+                resetFormUI();
             });
 
             function resetFormUI() {
@@ -895,19 +975,26 @@ function doGet(e) {
                 entryTitle.textContent = "New Bill Entry";
                 entrySubtitle.textContent = "Fill in the details below to generate a new record.";
                 navEntryText.textContent = "New Bill";
-                entryCard.classList.remove('bg-primary-light');
-                submitBtn.disabled = false;
+                entryCard.classList.remove('bg-primary-light', 'dark:bg-indigo-900/30');
+                
+                submitBtn.classList.remove('bg-primary-dark');
+                submitBtn.classList.add('md-btn-primary');
                 submitText.textContent = "Save Bill";
-                submitIcon.classList.remove('hidden');
-                loadingSpinner.classList.add('hidden');
+                
                 document.getElementById('cnote').focus();
             }
 
             function showSnackbar(message, isError = false) {
                 const snackbar = document.getElementById("snackbar");
                 snackbar.textContent = message;
-                snackbar.style.backgroundColor = isError ? "#EF4444" : "#1E293B"; // Red 500 for error, Slate 800 for normal
-                snackbar.className = "show";
+                if(isError) {
+                    snackbar.classList.add('bg-red-500', 'dark:bg-red-500');
+                    snackbar.classList.remove('bg-slate-800', 'dark:bg-white', 'text-slate-900');
+                } else {
+                    snackbar.classList.remove('bg-red-500', 'dark:bg-red-500');
+                    snackbar.classList.add('bg-slate-800', 'dark:bg-white', 'dark:text-slate-900');
+                }
+                snackbar.className += " show";
                 setTimeout(function(){ snackbar.className = snackbar.className.replace("show", ""); }, 3000);
             }
 
@@ -942,8 +1029,8 @@ function doGet(e) {
 
             function switchTab(targetId) {
                 navItems.forEach(nav => {
-                    nav.classList.remove('active', 'bg-primary-light', 'text-primary');
-                    if(nav.getAttribute('data-target') === targetId) nav.classList.add('active', 'bg-primary-light', 'text-primary');
+                    nav.classList.remove('active', 'bg-primary-light', 'dark:bg-indigo-900/30', 'text-primary', 'dark:text-indigo-400');
+                    if(nav.getAttribute('data-target') === targetId) nav.classList.add('active', 'bg-primary-light', 'dark:bg-indigo-900/30', 'text-primary', 'dark:text-indigo-400');
                 });
                 Object.values(sections).forEach(sec => sec.classList.add('hidden'));
                 sections[targetId].classList.remove('hidden');
@@ -958,42 +1045,46 @@ function doGet(e) {
                 });
             });
 
-            // Card Generation: Material Look
+            // Card Generation: Material Look with Dark Mode support
             function generateResultCard(item, dateStr, amount, isSearchTab = false) {
                 const encodedItem = encodeURIComponent(JSON.stringify(item));
                 const weightDisplay = item['Weight (Kg)'] ? `${item['Weight (Kg)']} Kg` : 'No Wt';
                 
                 return `
-                <div class="bg-white rounded-xl p-4 sm:p-5 shadow-sm border border-slate-200 hover:shadow-md transition-all mb-3 mx-0.5 sm:mx-1">
-                    
+                <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all mb-4 mx-0.5 sm:mx-1">
                     <div class="flex justify-between items-start gap-3">
-                        <div class="overflow-hidden flex-1">
-                            <div class="font-bold text-base sm:text-lg text-slate-900 mb-1.5 leading-tight break-words">${item['Party Name'] || '-'}</div>
-                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-slate-500 font-medium">
-                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1 text-slate-400">receipt</span>${item['C-Note No'] || '-'}</span>
-                                <span class="flex items-center"><span class="material-icons text-[14px] mr-1 text-slate-400">calendar_today</span>${dateStr || '-'}</span>
-                                <span class="flex items-center truncate max-w-[120px] sm:max-w-[200px]" title="${item['Destination'] || '-'}"><span class="material-icons text-[14px] mr-1 text-slate-400">place</span>${item['Destination'] || '-'}</span>
+                        <div class="overflow-hidden flex-1 w-full">
+                            <div class="font-bold text-lg text-slate-900 dark:text-white mb-2 truncate" title="${item['Party Name'] || '-'}">${item['Party Name'] || '-'}</div>
+                            <div class="flex flex-wrap gap-2 text-slate-600 dark:text-slate-400">
+                                <span class="flex items-center text-xs font-semibold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">receipt</span>${item['C-Note No'] || '-'}</span>
+                                <span class="flex items-center text-xs font-semibold bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded"><span class="material-icons text-[16px] mr-1">calendar_today</span>${dateStr || '-'}</span>
                             </div>
                         </div>
                         <div class="text-right shrink-0 flex flex-col items-end">
-                            <div class="font-bold text-lg sm:text-xl text-primary leading-none">₹${amount.toFixed(2)}</div>
-                            <div class="text-[10px] sm:text-xs font-semibold text-slate-400 mt-1.5 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">${weightDisplay}</div>
+                            <div class="font-bold text-xl sm:text-2xl text-primary dark:text-indigo-400 leading-none mb-1.5">₹${amount.toFixed(2)}</div>
+                            <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded inline-block border border-slate-100 dark:border-slate-700">${weightDisplay}</div>
                         </div>
                     </div>
 
+                    <div class="text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 p-2 sm:p-3 rounded-lg border border-slate-100 dark:border-slate-700 uppercase truncate mt-4" title="${item['Destination'] || '-'}">
+                        <span class="material-icons text-[18px] inline-block align-middle mr-1 text-slate-400 dark:text-slate-500">place</span> ${item['Destination'] || '-'}
+                    </div>
+
                     ${!isSearchTab ? `
-                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 pt-3 mt-3">
-                        <button class="edit-bill-btn text-slate-700 bg-slate-100 hover:bg-slate-200 hover:text-primary rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
-                            <span class="material-icons text-[16px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
+                    <div class="flex flex-wrap sm:flex-nowrap gap-2 w-full border-t border-slate-100 dark:border-slate-700 pt-4 mt-4">
+                        <button class="edit-bill-btn text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 hover:text-primary dark:hover:text-indigo-400 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Edit">
+                            <span class="material-icons text-[18px]">edit</span> <span class="ml-1 sm:hidden">Edit</span>
                         </button>
-                        <button class="delete-bill-btn text-red-600 bg-red-50 hover:bg-red-100 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
-                            <span class="material-icons text-[16px]">delete</span> <span class="ml-1 sm:hidden">Del</span>
+                        <button class="delete-bill-btn text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Delete">
+                            <span class="material-icons text-[18px]">delete</span> <span class="ml-1 sm:hidden">Delete</span>
                         </button>
-                        <button class="share-bill-btn text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg px-2 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
-                            <span class="material-icons text-[16px] mr-1">share</span> WA
+                        
+                        <button class="share-bill-btn text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl px-3 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-1" data-item="${encodedItem}" title="Share via WhatsApp">
+                            <span class="material-icons text-[18px] mr-1">share</span> WA
                         </button>
-                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-lg px-3 py-2 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
-                            <span class="material-icons text-[16px] mr-1.5">print</span> Print
+
+                        <button class="print-bill-btn bg-primary text-white hover:bg-primary-dark rounded-xl px-4 py-2.5 text-xs font-semibold transition-colors flex items-center justify-center flex-[1.5]" data-item="${encodedItem}">
+                            <span class="material-icons text-[18px] mr-1.5">print</span> Print
                         </button>
                     </div>
                     ` : ''}
@@ -1022,6 +1113,15 @@ function doGet(e) {
             }
 
             document.addEventListener('click', async (e) => {
+                
+                // SHARE SINGLE BILL AS IMAGE DIRECTLY
+                const shareImgBtn = e.target.closest('.share-bill-btn');
+                if (shareImgBtn) {
+                    const itemData = JSON.parse(decodeURIComponent(shareImgBtn.getAttribute('data-item')));
+                    prepareSingleBillData(itemData);
+                    shareImage('printArea', `Invoice_${itemData['C-Note No'] || 'Bill'}.jpg`);
+                }
+
                 // PRINT SINGLE BILL
                 const printBtn = e.target.closest('.print-bill-btn');
                 if (printBtn) {
@@ -1031,35 +1131,16 @@ function doGet(e) {
                     window.print();
                 }
 
-                // SHARE SINGLE BILL ON WA
-                const shareBtn = e.target.closest('.share-bill-btn');
-                if (shareBtn) {
-                    const itemData = JSON.parse(decodeURIComponent(shareBtn.getAttribute('data-item')));
-                    prepareSingleBillData(itemData);
-                    shareImage('printArea', `Invoice_${itemData['C-Note No'] || 'Bill'}.jpg`);
-                }
-
                 // DELETE BILL
                 const deleteBtn = e.target.closest('.delete-bill-btn');
                 if (deleteBtn) {
                     const itemData = JSON.parse(decodeURIComponent(deleteBtn.getAttribute('data-item')));
                     if(confirm(`Are you sure you want to delete the bill for ${itemData['Party Name']} (C-Note: ${itemData['C-Note No']})?\n\nThis action cannot be undone.`)) {
-                        const card = deleteBtn.closest('.bg-white.rounded-xl');
+                        const card = deleteBtn.closest('.bg-white, .dark\\:bg-slate-800');
                         if (card) card.remove();
-                        showSnackbar("Deleting bill...", false);
-
-                        if(!APPS_SCRIPT_URL) return; 
-
-                        const fd = new FormData();
-                        fd.append('action', 'delete');
-                        fd.append('rowIndex', itemData.rowIndex);
-
-                        try {
-                            await fetch(APPS_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
-                            showSnackbar("Bill Deleted Successfully!");
-                        } catch(err) {
-                            showSnackbar("Error deleting bill. Try again.", true);
-                        }
+                        
+                        // Send delete to background queue
+                        saveToSyncQueue({ action: 'delete', rowIndex: itemData.rowIndex });
                     }
                 }
 
@@ -1079,10 +1160,9 @@ function doGet(e) {
                     entryTitle.textContent = "Edit Bill Record";
                     entrySubtitle.textContent = "Update details for the selected record.";
                     navEntryText.textContent = "Edit Bill";
-                    entryCard.classList.add('bg-primary-light');
-
-                    submitBtn.classList.remove('md-btn-primary', 'text-white');
-                    submitBtn.classList.add('bg-primary-dark', 'text-white');
+                    
+                    submitBtn.classList.remove('md-btn-primary');
+                    submitBtn.classList.add('bg-primary-dark'); // Darker to indicate edit
                     submitText.textContent = "Update Bill";
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
@@ -1111,7 +1191,7 @@ function doGet(e) {
                 doSearchBtn.disabled = true;
                 searchIcon.textContent = "hourglass_empty";
                 searchText.textContent = "Searching";
-                searchResults.innerHTML = '<div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 animate-pulse text-slate-500 font-medium text-sm">Searching...</div>';
+                searchResults.innerHTML = '<div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-pulse text-slate-500 font-medium text-sm">Searching...</div>';
                 monthlyBillContainer.classList.add('hidden'); 
 
                 try {
@@ -1133,8 +1213,8 @@ function doGet(e) {
                     if (!data || data.length === 0) {
                         currentSearchData = [];
                         searchResults.innerHTML = `
-                            <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                                <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300">search_off</span>
+                            <div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                                <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">search_off</span>
                                 <p class="text-sm font-medium text-slate-500">No bills found for "${query}"</p>
                             </div>`;
                     } else {
@@ -1162,7 +1242,7 @@ function doGet(e) {
                     
                     showSnackbar(errMsg, true);
                     searchResults.innerHTML = `
-                        <div class="text-center py-12 border-2 border-dashed border-red-200 rounded-2xl bg-red-50 text-red-500">
+                        <div class="text-center py-12 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-500">
                             <span class="material-icons text-4xl sm:text-5xl mb-3">error_outline</span>
                             <p class="text-sm font-medium">${errMsg}</p>
                         </div>`;
@@ -1187,7 +1267,7 @@ function doGet(e) {
             const confirmMonthBtn = document.getElementById('confirmMonthBtn');
             const shareMonthBtn = document.getElementById('shareMonthBtn');
             const monthSelector = document.getElementById('monthSelector');
-
+            
             generateMonthlyBillBtn.addEventListener('click', () => {
                 monthModal.classList.remove('hidden');
                 const now = new Date();
@@ -1290,6 +1370,7 @@ function doGet(e) {
                 if (prepareMonthlyBillData()) {
                     monthModal.classList.add('hidden');
                     const [selYear, selMonth] = monthSelector.value.split('-');
+                    // Exclusively trigger the image share function to prevent blank mobile errors
                     shareImage('printAreaMonthly', `Monthly_Statement_${selMonth}_${selYear}.jpg`);
                 }
             });
@@ -1311,7 +1392,7 @@ function doGet(e) {
                 if(!selectedDateStr) return;
 
                 refreshIcon.classList.add('animate-spin');
-                todayResults.innerHTML = '<div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50 animate-pulse text-slate-500 font-medium text-sm">Fetching...</div>';
+                todayResults.innerHTML = '<div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50 animate-pulse text-slate-500 font-medium text-sm">Fetching...</div>';
                 todaySummary.classList.add('hidden');
 
                 try {
@@ -1331,8 +1412,8 @@ function doGet(e) {
 
                     if (!data || data.length === 0) {
                         todayResults.innerHTML = `
-                            <div class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50">
-                                <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300">receipt_long</span>
+                            <div class="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50 dark:bg-slate-800/50">
+                                <span class="material-icons text-4xl sm:text-5xl mb-3 text-slate-300 dark:text-slate-600">receipt_long</span>
                                 <p class="text-sm font-medium text-slate-500">No bills generated on this date</p>
                             </div>`;
                     } else {
@@ -1362,7 +1443,7 @@ function doGet(e) {
 
                     showSnackbar(errMsg, true);
                     todayResults.innerHTML = `
-                        <div class="text-center py-12 border-2 border-dashed border-red-200 rounded-2xl bg-red-50 text-red-500">
+                        <div class="text-center py-12 border-2 border-dashed border-red-200 dark:border-red-900/30 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-500">
                             <span class="material-icons text-4xl sm:text-5xl mb-3">error_outline</span>
                             <p class="text-sm font-medium">${errMsg}</p>
                         </div>`;
