@@ -53,7 +53,7 @@
             display: none;
         }
 
-        /* Robust Print CSS */
+        /* Robust Print CSS with Smart Pagination */
         @media print {
             @page { margin: 0.8cm; }
             body {
@@ -69,6 +69,13 @@
 
             body[data-print-mode="single"] #printArea { display: block !important; }
             body[data-print-mode="monthly"] #printAreaMonthly { display: block !important; }
+
+            /* Pagination Rules to prevent rows/content from cutting across pages */
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+            .avoid-page-break { page-break-inside: avoid; }
         }
 
         /* Material UI Components */
@@ -346,8 +353,8 @@
                     <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Daily Bills</h2>
                     <p class="font-medium text-slate-500 mt-1 text-sm sm:text-base">Showing records for the selected date.</p>
                 </div>
-                <div class="flex items-center gap-3 w-full sm:w-auto mt-2 sm:mt-0">
-                    <input type="date" id="dailyDateSelector" class="md-input flex-grow sm:w-48 text-sm">
+                <div class="flex items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
+                    <input type="date" id="dailyDateSelector" class="md-input py-2 text-sm flex-grow sm:w-48">
                     <button type="button" id="refreshTodayBtn" class="md-btn md-btn-tonal w-12 h-12 shrink-0" title="Refresh">
                         <span class="material-icons text-[24px]" id="refreshIcon">refresh</span>
                     </button>
@@ -486,11 +493,20 @@ function doGet(e) {
         <div id="monthModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden z-[110] flex items-center justify-center p-4 transition-opacity">
             <div class="md-card max-w-sm w-full p-6 sm:p-8 flex flex-col bg-white">
                 <h3 class="text-xl font-bold text-slate-900 mb-1 flex items-center">
-                    <span class="material-icons mr-2 text-primary">calendar_month</span> Select Month
+                    <span class="material-icons mr-2 text-primary">receipt_long</span> Generate Bill
                 </h3>
-                <p class="text-sm font-medium text-slate-500 mb-6">Choose the month for the statement.</p>
+                <p class="text-sm font-medium text-slate-500 mb-6">Choose month and add any pending dues.</p>
                 
-                <input type="month" id="monthSelector" class="md-input py-3 mb-8 font-semibold text-base text-center">
+                <div class="flex flex-col gap-4 mb-8">
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-600">Billing Month</label>
+                        <input type="month" id="monthSelector" class="md-input py-2.5 font-semibold text-base text-center">
+                    </div>
+                    <div class="flex flex-col gap-1.5">
+                        <label class="text-xs font-semibold text-slate-600">Previous Pending Amount (₹) <span class="font-normal text-slate-400">(Optional)</span></label>
+                        <input type="number" step="0.01" id="monthlyPendingAmount" class="md-input py-2.5 font-semibold text-base text-center text-primary" placeholder="0.00">
+                    </div>
+                </div>
                 
                 <div class="flex flex-col sm:flex-row justify-end gap-2 mt-auto">
                     <button id="cancelMonthBtn" class="md-btn md-btn-tonal px-4 py-2.5 text-xs sm:text-sm w-full sm:w-1/3">Cancel</button>
@@ -549,7 +565,7 @@ function doGet(e) {
             </tbody>
         </table>
 
-        <div class="flex justify-between text-sm mt-8">
+        <div class="flex justify-between text-sm mt-8 avoid-page-break">
             <div class="border border-black p-4 w-1/2">
                 <p class="font-bold border-b border-gray-300 pb-1 mb-2 uppercase">Bank Details for Payment</p>
                 <p class="mt-1"><strong>Name:</strong> Prabhakar Urkude</p>
@@ -586,6 +602,7 @@ function doGet(e) {
             </div>
         </div>
 
+        <!-- Details Table -->
         <table class="w-full border-collapse border border-black mb-10 text-sm">
             <thead>
                 <tr class="bg-gray-100">
@@ -599,15 +616,23 @@ function doGet(e) {
             <tbody id="monthlyPrintTbody">
             </tbody>
             <tfoot>
-                <tr class="bg-gray-100 font-semibold">
-                    <td colspan="3" class="border border-black p-2 text-right uppercase tracking-wider">Grand Total</td>
-                    <td class="border border-black p-2 text-right font-bold" id="monthlyPrintTotalWeight">-</td>
-                    <td class="border border-black p-2 text-right font-bold" id="monthlyPrintTotalAmount">-</td>
+                <tr class="bg-gray-50 font-semibold text-sm" id="monthlyPrintSubtotalRow">
+                    <td colspan="3" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Current Month Total</td>
+                    <td class="border border-black p-2 text-right font-bold text-xs" id="monthlyPrintTotalWeight">-</td>
+                    <td class="border border-black p-2 text-right font-bold text-sm" id="monthlyPrintSubtotalAmount">-</td>
+                </tr>
+                <tr class="bg-white font-semibold hidden text-sm" id="monthlyPrintPendingRow">
+                    <td colspan="4" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Previous Pending Amount</td>
+                    <td class="border border-black p-2 text-right font-bold text-sm text-red-600" id="monthlyPrintPendingAmount">-</td>
+                </tr>
+                <tr class="bg-gray-100 font-bold text-base">
+                    <td colspan="4" class="border border-black p-2 text-right uppercase tracking-wider text-xs">Grand Total</td>
+                    <td class="border border-black p-2 text-right font-bold" id="monthlyPrintGrandTotal">-</td>
                 </tr>
             </tfoot>
         </table>
 
-        <div class="flex justify-between text-sm mt-8">
+        <div class="flex justify-between text-sm mt-8 avoid-page-break">
             <div class="border border-black p-4 w-1/2">
                 <p class="font-bold border-b border-gray-300 pb-1 mb-2 uppercase">Bank Details for Payment</p>
                 <p class="mt-1"><strong>Name:</strong> Prabhakar Urkude</p>
@@ -699,7 +724,8 @@ function doGet(e) {
                     filename: filename,
                     image: { type: 'jpeg', quality: 0.98 },
                     html2canvas: { scale: 2, useCORS: true, logging: false },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
                 };
 
                 showSnackbar("Preparing PDF for WhatsApp...", false);
@@ -1151,6 +1177,7 @@ function doGet(e) {
                 const now = new Date();
                 const mStr = (now.getMonth() + 1).toString().padStart(2, '0');
                 monthSelector.value = `${now.getFullYear()}-${mStr}`;
+                document.getElementById('monthlyPendingAmount').value = '';
             });
 
             cancelMonthBtn.addEventListener('click', () => {
@@ -1159,6 +1186,8 @@ function doGet(e) {
 
             function prepareMonthlyBillData() {
                 const selectedMonthStr = monthSelector.value;
+                const pendingAmount = parseFloat(document.getElementById('monthlyPendingAmount').value) || 0;
+                
                 if (!selectedMonthStr) {
                     showSnackbar("Please select a valid month.", true);
                     return false;
@@ -1174,45 +1203,62 @@ function doGet(e) {
                     return d.getFullYear() === sY && (d.getMonth() + 1) === sM;
                 });
 
-                if (filteredMonthlyBills.length === 0) {
+                if (filteredMonthlyBills.length === 0 && pendingAmount === 0) {
                     showSnackbar("No bills found for the selected month.", true);
                     return false;
                 }
-
-                filteredMonthlyBills.sort((a, b) => new Date(a['Date']) - new Date(b['Date']));
 
                 let totalAmt = 0;
                 let totalWt = 0;
                 let tbodyHtml = '';
 
-                filteredMonthlyBills.forEach(item => {
-                    let d = new Date(item['Date']);
-                    let dateStr = !isNaN(d) ? d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) : item['Date'];
-                    let amt = parseFloat(item['Amount']) || 0;
-                    let wt = parseFloat(item['Weight (Kg)']) || 0;
-                    
-                    totalAmt += amt;
-                    totalWt += wt;
+                if (filteredMonthlyBills.length > 0) {
+                    filteredMonthlyBills.sort((a, b) => new Date(a['Date']) - new Date(b['Date']));
 
-                    tbodyHtml += `
-                        <tr>
-                            <td class="border border-black p-2 text-sm">${dateStr}</td>
-                            <td class="border border-black p-2 text-sm">${item['C-Note No'] || '-'}</td>
-                            <td class="border border-black p-2 text-sm truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
-                            <td class="border border-black p-2 text-sm text-right">${wt ? wt + ' Kg' : '-'}</td>
-                            <td class="border border-black p-2 text-sm text-right font-semibold">₹${amt.toFixed(2)}</td>
-                        </tr>
-                    `;
-                });
+                    filteredMonthlyBills.forEach(item => {
+                        let d = new Date(item['Date']);
+                        let dateStr = !isNaN(d) ? d.toLocaleDateString('en-US', {day:'2-digit', month:'short', year:'numeric'}) : item['Date'];
+                        let amt = parseFloat(item['Amount']) || 0;
+                        let wt = parseFloat(item['Weight (Kg)']) || 0;
+                        
+                        totalAmt += amt;
+                        totalWt += wt;
 
-                document.getElementById('monthlyPrintPartyName').textContent = filteredMonthlyBills[0]['Party Name'] || '-';
+                        tbodyHtml += `
+                            <tr>
+                                <td class="border border-black p-2 text-sm">${dateStr}</td>
+                                <td class="border border-black p-2 text-sm">${item['C-Note No'] || '-'}</td>
+                                <td class="border border-black p-2 text-sm truncate max-w-[150px] uppercase">${item['Destination'] || '-'}</td>
+                                <td class="border border-black p-2 text-sm text-right">${wt ? wt + ' Kg' : '-'}</td>
+                                <td class="border border-black p-2 text-sm text-right font-semibold">₹${amt.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                    document.getElementById('monthlyPrintPartyName').textContent = filteredMonthlyBills[0]['Party Name'] || '-';
+                } else {
+                    const searchedParty = document.getElementById('recordSearchInput').value.trim();
+                    document.getElementById('monthlyPrintPartyName').textContent = searchedParty || 'Unknown Party';
+                    tbodyHtml = `<tr><td colspan="5" class="border border-black p-4 text-center text-gray-500 italic text-sm">No new bills for this month. Showing pending dues.</td></tr>`;
+                }
                 
                 const dateObj = new Date(sY, sM - 1);
                 document.getElementById('monthlyPrintMonth').textContent = dateObj.toLocaleDateString('en-US', {month: 'long', year: 'numeric'});
                 
                 document.getElementById('monthlyPrintTbody').innerHTML = tbodyHtml;
                 document.getElementById('monthlyPrintTotalWeight').textContent = totalWt ? totalWt.toFixed(2) + ' Kg' : '-';
-                document.getElementById('monthlyPrintTotalAmount').textContent = '₹' + totalAmt.toFixed(2);
+                document.getElementById('monthlyPrintSubtotalAmount').textContent = '₹' + totalAmt.toFixed(2);
+
+                const pendingRow = document.getElementById('monthlyPrintPendingRow');
+                if (pendingAmount > 0) {
+                    pendingRow.classList.remove('hidden');
+                    document.getElementById('monthlyPrintPendingAmount').textContent = '₹' + pendingAmount.toFixed(2);
+                } else {
+                    pendingRow.classList.add('hidden');
+                }
+
+                const grandTotal = totalAmt + pendingAmount;
+                document.getElementById('monthlyPrintGrandTotal').textContent = '₹' + grandTotal.toFixed(2);
+
                 return true;
             }
 
